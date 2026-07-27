@@ -1,5 +1,5 @@
 /**
- * AI Live TV — Google Apps Script Web App
+ * Ai ivb7 — Google Apps Script Web App
  * ----------------------------------------
  * Backs the /api/leads endpoint (POST append) and the /admin dashboard (GET stats).
  *
@@ -19,8 +19,22 @@ var SHEET_NAME = 'AI-TV-Channel-Leads';
 function doPost(e) {
   try {
     var body = JSON.parse(e.postData.contents);
-    var sheet = SpreadsheetApp.getActive().getSheetByName(SHEET_NAME)
-      || SpreadsheetApp.getActive().getSheets()[0];
+    var spreadsheet = SpreadsheetApp.getActive();
+    var sheet = spreadsheet.getSheetByName(SHEET_NAME);
+    
+    // Create sheet if it doesn't exist
+    if (!sheet) {
+      sheet = spreadsheet.insertSheet(SHEET_NAME);
+    }
+    
+    // Add headers if the sheet is empty
+    if (sheet.getLastRow() === 0) {
+      sheet.appendRow([
+        'Timestamp', 'Name', 'Phone', 'Email', 'Country', 'State', 'City', 'Language', 'Interest'
+      ]);
+      sheet.getRange(1, 1, 1, 9).setFontWeight('bold');
+    }
+    
     sheet.appendRow([
       new Date(),
       body.name || '',

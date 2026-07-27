@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { PlayCircle } from "lucide-react";
 
 const headlines = [
-  "Start Your Own AI Live TV Channel",
+  "Start Your Own Ai ivb7 Channel",
   "Broadcast 24×7 — Without Keeping Your Computer ON",
   "Own Your Own Broadcasting Network",
 ];

@@ -17,8 +17,8 @@ import { adminLogin, adminLogout, adminStatus, getLeadStats } from "@/lib/admin.
 export const Route = createFileRoute("/admin")({
   head: () => ({
     meta: [
-      { title: "Admin — AI Live TV" },
-      { name: "description", content: "Registration analytics for AI Live TV." },
+      { title: "Admin — Ai ivb7" },
+      { name: "description", content: "Registration analytics for Ai ivb7." },
       { name: "robots", content: "noindex" },
     ],
   }),

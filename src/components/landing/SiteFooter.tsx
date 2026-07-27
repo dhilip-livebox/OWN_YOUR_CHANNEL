@@ -55,7 +55,7 @@ export function SiteFooter() {
       </div>
       <div className="border-t border-border/60">
         <div className="mx-auto flex max-w-[1280px] items-center justify-between px-6 py-5 text-xs text-muted-foreground">
-          <p>© {new Date().getFullYear()} AI Live TV. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} Ai ivb7. All rights reserved.</p>
           <p>Broadcast tech, reimagined.</p>
         </div>
       </div>

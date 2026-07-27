@@ -7,9 +7,9 @@ import { SiteFooter } from "@/components/landing/SiteFooter";
 export const Route = createFileRoute("/resources")({
   head: () => ({
     meta: [
-      { title: "Free Resources — AI Live TV" },
-      { name: "description", content: "Software, guides, videos, docs and training for launching your AI Live TV channel." },
-      { property: "og:title", content: "Free Resources — AI Live TV" },
+      { title: "Free Resources — Ai ivb7" },
+      { name: "description", content: "Software, guides, videos, docs and training for launching your Ai ivb7 channel." },
+      { property: "og:title", content: "Free Resources — Ai ivb7" },
       { property: "og:description", content: "Everything you need to launch your channel — unlocked." },
     ],
   }),

@@ -1,4 +1,4 @@
-# Google Apps Script — AI Live TV lead capture
+# Google Apps Script — Ai ivb7 lead capture
 
 The site's `/api/leads` endpoint and the `/admin` dashboard both talk to a single
 Google Apps Script Web App backed by a Google Sheet. This is the whole
