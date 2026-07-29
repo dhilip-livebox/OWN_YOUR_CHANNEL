@@ -1,5 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { Radio } from "lucide-react";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { PricingTable } from "@/components/landing/PricingTable";
 
 export function SiteHeader() {
   return (
@@ -19,12 +21,27 @@ export function SiteHeader() {
           <a href="#journey" className="transition hover:text-foreground">Journey</a>
           <a href="#videos" className="transition hover:text-foreground">Videos</a>
         </nav>
-        <a
-          href="#register"
-          className="inline-flex items-center rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-[0_0_0_1px_color-mix(in_oklch,var(--primary)_60%,transparent)] transition hover:brightness-110"
-        >
-          Register free
-        </a>
+        <div className="flex items-center gap-3">
+          <Dialog>
+            <DialogTrigger asChild>
+              <button 
+                title="Purchase Services"
+                className="inline-flex items-center rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sm transition hover:brightness-110"
+              >
+                Purchase Services
+              </button>
+            </DialogTrigger>
+            <DialogContent className="max-w-4xl p-0 h-[85vh] overflow-y-auto sm:rounded-xl">
+              <PricingTable />
+            </DialogContent>
+          </Dialog>
+          <a
+            href="#register"
+            className="text-sm font-semibold text-muted-foreground transition hover:text-foreground"
+          >
+            Register free
+          </a>
+        </div>
       </div>
     </header>
   );

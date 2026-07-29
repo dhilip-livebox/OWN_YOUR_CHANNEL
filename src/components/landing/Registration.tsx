@@ -122,7 +122,7 @@ export function Registration({ onRegistered }: { onRegistered: () => void }) {
               Free · Instant access
             </span>
             <h2 className="mt-3 font-display text-3xl font-bold leading-tight tracking-tight text-foreground sm:text-4xl">
-              Register free — get software, guides & training instantly.
+              Register to get free consulting.
             </h2>
             <p className="mt-3 text-muted-foreground">
               One form. Everything you need to start broadcasting is unlocked the
@@ -224,7 +224,7 @@ export function Registration({ onRegistered }: { onRegistered: () => void }) {
                   disabled={busy}
                   className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-md bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-[0_0_0_1px_color-mix(in_oklch,var(--primary)_60%,transparent)] transition hover:brightness-110 disabled:opacity-60"
                 >
-                  {busy ? "Registering…" : "Register free & unlock resources"}
+                  {busy ? "Registering…" : "Register to get free consulting"}
                 </button>
                 <p className="mt-3 text-center text-xs text-muted-foreground">
                   We'll never share your details. One-tap unsubscribe anytime.
