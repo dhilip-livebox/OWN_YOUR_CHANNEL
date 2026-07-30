@@ -1,4 +1,3 @@
-import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -13,22 +12,18 @@ import {
 import { LogOut, Lock, ExternalLink, Save, Plus, Trash2 } from "lucide-react";
 import { adminLogin, adminLogout, adminStatus, getLeadStats, getPricing, updatePricing, PricingService } from "@/lib/admin.functions";
 
-export const Route = createFileRoute("/dashboard")({
-  head: () => ({
-    meta: [
-      { title: "Admin — Ai ivb7" },
-      { name: "description", content: "Registration analytics for Ai ivb7." },
-      { name: "robots", content: "noindex" },
-    ],
-  }),
-  loader: async () => ({ status: await adminStatus() }),
-  component: AdminPage,
-});
+export default function AdminPage() {
+  const [unlocked, setUnlocked] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-function AdminPage() {
-  const { status } = Route.useLoaderData();
-  const router = useRouter();
-  const [unlocked, setUnlocked] = useState(status.unlocked);
+  useEffect(() => {
+    adminStatus().then((res) => {
+      setUnlocked(res.unlocked);
+      setLoading(false);
+    });
+  }, []);
+
+  if (loading) return <div className="p-10 text-muted-foreground">Checking authentication...</div>;
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -44,7 +39,7 @@ function AdminPage() {
             <LogoutButton
               onOut={async () => {
                 setUnlocked(false);
-                await router.invalidate();
+                window.location.reload();
               }}
             />
           )}
