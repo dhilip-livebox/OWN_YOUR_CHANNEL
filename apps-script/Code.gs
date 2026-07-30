@@ -14,50 +14,138 @@
  *   5. Copy the /exec URL and store it in the app as SHEETS_ENDPOINT.
  */
 
-var SHEET_NAME = 'AI-TV-Channel-Leads';
+var SHEET_NAME_LEADS = 'AI-TV-Channel-Leads';
+var SHEET_NAME_ORDERS = 'AI-TV-Channel-Orders';
 
 function doPost(e) {
   try {
     var body = JSON.parse(e.postData.contents);
     var spreadsheet = SpreadsheetApp.getActive();
-    var sheet = spreadsheet.getSheetByName(SHEET_NAME);
     
-    // Create sheet if it doesn't exist
-    if (!sheet) {
-      sheet = spreadsheet.insertSheet(SHEET_NAME);
-    }
-    
-    // Add headers if the sheet is empty
-    if (sheet.getLastRow() === 0) {
+    if (body.type === 'update_pricing') {
+       var sheet = spreadsheet.getSheetByName('AI-TV-Channel-Pricing');
+       if (!sheet) {
+         sheet = spreadsheet.insertSheet('AI-TV-Channel-Pricing');
+       }
+       sheet.clear();
+       sheet.appendRow(["id", "name", "description", "price"]);
+       sheet.getRange(1, 1, 1, 4).setFontWeight('bold');
+       if (body.services && body.services.length > 0) {
+         var data = body.services.map(function(s) {
+           return [s.id, s.name, s.description || "", s.price === null ? "" : s.price];
+         });
+         sheet.getRange(2, 1, data.length, 4).setValues(data);
+       }
+       return json({ ok: true });
+    } else if (body.type === 'checkout') {
+      var sheet = spreadsheet.getSheetByName(SHEET_NAME_ORDERS);
+      if (!sheet) {
+        sheet = spreadsheet.insertSheet(SHEET_NAME_ORDERS);
+      }
+      if (sheet.getLastRow() === 0) {
+        sheet.appendRow([
+          'Timestamp', 'Name', 'Email', 'Phone', 'Selected Services', 'Subtotal', 'GST', 'Total Amount'
+        ]);
+        sheet.getRange(1, 1, 1, 8).setFontWeight('bold');
+      }
       sheet.appendRow([
-        'Timestamp', 'Name', 'Phone', 'Email', 'Country', 'State', 'City', 'Language', 'Interest'
+        new Date(),
+        body.name || '',
+        body.email || '',
+        body.phone || '',
+        body.services || '',
+        body.subTotal || 0,
+        body.gst || 0,
+        body.amount || 0
       ]);
-      sheet.getRange(1, 1, 1, 9).setFontWeight('bold');
+      return json({ ok: true });
+    } else if (body.type === 'consultation' || !body.type) {
+      var sheet = spreadsheet.getSheetByName(SHEET_NAME_LEADS);
+      if (!sheet) {
+        sheet = spreadsheet.insertSheet(SHEET_NAME_LEADS);
+      }
+      if (sheet.getLastRow() === 0) {
+        sheet.appendRow([
+          'Timestamp', 'Name', 'Phone', 'Email', 'Country', 'State', 'City', 'Language', 'Interest'
+        ]);
+        sheet.getRange(1, 1, 1, 9).setFontWeight('bold');
+      }
+      sheet.appendRow([
+        new Date(),
+        body.name || '',
+        body.phone || '',
+        body.email || '',
+        body.country || '',
+        body.state || '',
+        body.city || '',
+        body.language || '',
+        body.interest || '',
+      ]);
+      return json({ ok: true });
+    } else {
+      return json({ ok: false, error: 'Unknown request type' });
     }
-    
-    sheet.appendRow([
-      new Date(),
-      body.name || '',
-      body.phone || '',
-      body.email || '',
-      body.country || '',
-      body.state || '',
-      body.city || '',
-      body.language || '',
-      body.interest || '',
-    ]);
-    return json({ ok: true });
   } catch (err) {
     return json({ ok: false, error: String(err) });
   }
 }
 
-function doGet() {
+function doGet(e) {
   try {
-    var sheet = SpreadsheetApp.getActive().getSheetByName(SHEET_NAME)
-      || SpreadsheetApp.getActive().getSheets()[0];
+    var action = e && e.parameter ? e.parameter.action : null;
+    var spreadsheet = SpreadsheetApp.getActive();
+    
+    if (action === 'pricing') {
+      var sheet = spreadsheet.getSheetByName('AI-TV-Channel-Pricing');
+      if (!sheet) {
+        sheet = spreadsheet.insertSheet('AI-TV-Channel-Pricing');
+        var defaultServices = [
+          [1, "Website Hosting Server", "Server to host built-in Websites, Apps, Streaming & Storage", 299],
+          [2, "Streaming Server", "Streaming Server to stream to 2 platforms", 499],
+          [3, "Multi-Platform Broadcasting Server", "with your own logo and name insertion or slide insertion on video player with 1000 GB bandwidth every month. Get your own control panel for managing your server.", 499],
+          [4, "Re-Streaming Server", "This server takes your feed and re-streams it to multiple servers.- you can also increase the bit rate - for example your internet is very low - this can take and stream even in 4k or full hd from the server.", 999],
+          [5, "AI Automated Live Streaming for streaming", "without any system and High Speed internet - used for automated Live TV Channel, Automated Scheduled live Streaming all without local system device and internet", 1999],
+          [6, "No Delay RTMP Server", "This Server is used for conducting Panel discussions", 899],
+          [7, "SRT Server", "To Stream to Jio OTT Platform etc.", 899],
+          [8, "RTSP Server", "To pull videos from IP Cameras", 899],
+          [9, "Streaming Server to push Local TV and Broadcast Receiver box", "Streaming Server to push to Local MSO through Broadcast receiver Box.", 499],
+          [10, "Playout Server Software", "with control for Local TV broadcast and TVs In Malls and other public places with control system", 499],
+          [11, "Local TV Broadcasting Control Panel and Monitoring Server", "Monitoring Multiple Broadcast Receiver Boxes at various MSOs", 499],
+          [12, "Live TV Websites for your Channel", "Live TV Website with your own Name and Logo", 299],
+          [13, "Live TV Andorid App", "Android App - APK with your own Name and Logo", 499],
+          [14, "Direct broadcast to Mobile App", "Direct to Mobile App with your own Name and logo - Broadcast direct to all Mobiles without any 3rd party controls", 899],
+          [15, "Storage", "50 GB (Rs.50 per GB)", 500],
+          [16, "Bandwidth", "3000 GB per month (Rs.1 per GB BW)", 500],
+          [17, "Server Analytics", "Shows each viewer location, time, duration and the bandwidth used for viewing with IP address", ""],
+          [18, "Dual Control Panel", "3 levels of Controls", ""],
+          [19, "White labeled Video Player", "Have your own logo for each program or also have it as a slide in between programs", 499],
+          [20, "IPTV & OTT Server", "", 7999],
+          [21, "Transcoding Server", "", 5999],
+          [22, "Radio Channel Single", "", 999],
+          [23, "Radio Station Multiple", "", 4999]
+        ];
+        sheet.appendRow(["id", "name", "description", "price"]);
+        sheet.getRange(1, 1, 1, 4).setFontWeight('bold');
+        sheet.getRange(2, 1, defaultServices.length, 4).setValues(defaultServices);
+      }
+      var lastRow = sheet.getLastRow();
+      var rows = lastRow > 1 ? sheet.getRange(2, 1, lastRow - 1, 4).getValues() : [];
+      var services = rows.map(function(r) {
+        return {
+          id: r[0],
+          name: r[1],
+          description: r[2],
+          price: r[3] === "" ? null : Number(r[3])
+        };
+      });
+      return json({ services: services });
+    }
+
+    var sheet = spreadsheet.getSheetByName(SHEET_NAME_LEADS)
+      || spreadsheet.getSheets()[0];
     var last = sheet.getLastRow();
     var rows = last > 1 ? sheet.getRange(2, 1, last - 1, 1).getValues() : [];
+
 
     var now = new Date();
     var startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());

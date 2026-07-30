@@ -1,7 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { Radio } from "lucide-react";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import { PricingTable } from "@/components/landing/PricingTable";
+
 
 export function SiteHeader() {
   return (
@@ -16,30 +15,24 @@ export function SiteHeader() {
           </span>
         </Link>
         <nav className="hidden items-center gap-8 text-sm text-muted-foreground md:flex">
-          <a href="#benefits" className="transition hover:text-foreground">Why</a>
-          <a href="#platforms" className="transition hover:text-foreground">Platforms</a>
-          <a href="#journey" className="transition hover:text-foreground">Journey</a>
-          <a href="#videos" className="transition hover:text-foreground">Videos</a>
+          <a href="/#benefits" className="transition hover:text-foreground">Why</a>
+          <a href="/#platforms" className="transition hover:text-foreground">Platforms</a>
+          <a href="/#journey" className="transition hover:text-foreground">Journey</a>
+          <a href="/#videos" className="transition hover:text-foreground">Videos</a>
         </nav>
         <div className="flex items-center gap-3">
-          <Dialog>
-            <DialogTrigger asChild>
-              <button 
-                title="Purchase Services"
-                className="inline-flex items-center rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sm transition hover:brightness-110"
-              >
-                Purchase Services
-              </button>
-            </DialogTrigger>
-            <DialogContent className="max-w-4xl p-0 h-[85vh] overflow-y-auto sm:rounded-xl">
-              <PricingTable />
-            </DialogContent>
-          </Dialog>
-          <a
-            href="#register"
-            className="text-sm font-semibold text-muted-foreground transition hover:text-foreground"
+          <Link 
+            to="/purchase"
+            className="inline-flex items-center rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sm transition hover:brightness-110"
+            title="View Pricing"
           >
-            Register free
+            View Pricing
+          </Link>
+          <a
+            href="/#register"
+            className="text-sm font-semibold text-muted-foreground transition hover:text-foreground whitespace-nowrap"
+          >
+            Get Free Consultation
           </a>
         </div>
       </div>

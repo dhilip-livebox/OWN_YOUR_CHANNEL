@@ -5,11 +5,14 @@ import { motion } from "framer-motion";
 
 const languages = [
   { value: "English", label: "English", active: true },
-  { value: "Tamil", label: "Tamil (Coming Soon)", active: false },
-  { value: "Hindi", label: "Hindi (Coming Soon)", active: false },
-  { value: "Telugu", label: "Telugu (Coming Soon)", active: false },
-  { value: "Kannada", label: "Kannada (Coming Soon)", active: false },
-  { value: "Malayalam", label: "Malayalam (Coming Soon)", active: false },
+  { value: "Tamil", label: "Tamil", active: true },
+  { value: "Hindi", label: "Hindi", active: true },
+  { value: "Telugu", label: "Telugu", active: true },
+  { value: "Kannada", label: "Kannada", active: true },
+  { value: "Malayalam", label: "Malayalam", active: true },
+  { value: "Marathi", label: "Marathi", active: true },
+  { value: "Bengali", label: "Bengali", active: true },
+  { value: "Other", label: "Other", active: true },
 ];
 
 const interestOptions = ["TV Channel", "OTT", "Streaming", "Broadcast Server", "Others"];
@@ -66,22 +69,29 @@ export function Registration({ onRegistered }: { onRegistered: () => void }) {
     setErrors({});
     setBusy(true);
     try {
-      const res = await fetch("/api/leads", {
+      const submitData = {
+        type: 'consultation',
+        ...parsed.data,
+        interest:
+          parsed.data.interest.join(", ") +
+          (parsed.data.interestOther ? ` | Other: ${parsed.data.interestOther}` : ""),
+      };
+
+      const endpoint = import.meta.env.VITE_SHEETS_ENDPOINT || "https://script.google.com/macros/s/AKfycbzL5u2QfR4t-P3tW9J7J9jR7J9/exec";
+      // Fire and forget to make the UI feel instant
+      fetch(endpoint, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(parsed.data),
-      });
-      const json = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string };
-      if (!res.ok || !json.ok) {
-        setServerErr(json.error ?? "Submission failed. Please try again.");
-      } else {
-        try {
-          localStorage.setItem("ailivetv:registered", "1");
-          localStorage.setItem("ailivetv:email", parsed.data.email);
-        } catch {}
-        setDone(true);
-        onRegistered();
-      }
+        mode: "no-cors",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify(submitData),
+      }).catch(() => {});
+      
+      try {
+        localStorage.setItem("ailivetv:registered", "1");
+        localStorage.setItem("ailivetv:email", parsed.data.email);
+      } catch {}
+      setDone(true);
+      onRegistered();
     } catch {
       setServerErr("Network error. Please try again.");
     } finally {

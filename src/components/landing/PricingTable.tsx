@@ -1,7 +1,10 @@
 import { Check } from "lucide-react";
 import { useState } from "react";
 import QRCode from "react-qr-code";
-const services = [
+import { useQuery } from "@tanstack/react-query";
+import { getPricing } from "@/lib/admin.functions";
+
+const defaultServices = [
   {
     id: 1,
     name: "Website Hosting Server",
@@ -143,8 +146,17 @@ const services = [
 ];
 
 export function PricingTable() {
+  const { data: servicesData } = useQuery({
+    queryKey: ["pricing"],
+    queryFn: getPricing,
+  });
+  
+  const services = servicesData && servicesData.length > 0 ? servicesData : defaultServices;
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
-  const [showQR, setShowQR] = useState(false);
+  const [checkoutStep, setCheckoutStep] = useState<'cart' | 'register' | 'pay'>('cart');
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isCheckoutMode, setIsCheckoutMode] = useState(false);
 
   const toggleSelection = (id: number) => {
     setSelectedIds((prev) => {
@@ -156,12 +168,53 @@ export function PricingTable() {
       }
       return next;
     });
-    // Hide QR if selection changes to prevent stale amount QR
-    setShowQR(false);
+    // Reset checkout step if selection changes
+    setCheckoutStep('cart');
+    if (next.size === 0) setIsCheckoutMode(false);
+  };
+
+  const handleRegistration = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setCheckoutError(null);
+    setIsSubmitting(true);
+    
+    const fd = new FormData(e.currentTarget);
+    const selectedServicesList = services.filter(s => selectedIds.has(s.id)).map(s => s.name).join(", ");
+    
+    const payload = {
+      type: 'checkout',
+      name: String(fd.get("name") || ""),
+      email: String(fd.get("email") || ""),
+      phone: String(fd.get("phone") || ""),
+      services: selectedServicesList,
+      subTotal: subTotalAmount,
+      gst: gstAmount,
+      amount: totalAmount
+    };
+
+    const endpoint = import.meta.env.VITE_SHEETS_ENDPOINT || "https://script.google.com/macros/s/AKfycbzL5u2QfR4t-P3tW9J7J9jR7J9/exec";
+    
+    try {
+      // Fire and forget to make the UI feel instant.
+      fetch(endpoint, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify(payload),
+      }).catch(() => {});
+      
+      setCheckoutStep('pay');
+    } catch (err) {
+      setCheckoutError("Network error. Please check your connection.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const selectedServices = services.filter((s) => selectedIds.has(s.id));
-  const totalAmount = selectedServices.reduce((acc, curr) => acc + (curr.price || 0), 0);
+  const subTotalAmount = selectedServices.reduce((acc, curr) => acc + (curr.price || 0), 0);
+  const gstAmount = Math.round(subTotalAmount * 0.18);
+  const totalAmount = subTotalAmount + gstAmount;
 
   const upiId = "cdtechinnovationspvt.62289923@hdfcbank";
   const merchantName = "CDTECH INNOVATIONS PVT LTD";
@@ -169,7 +222,7 @@ export function PricingTable() {
 
   return (
     <section id="pricing" className="bg-background py-8">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6">
+      <div className="mx-auto max-w-[1600px] px-4 sm:px-6">
         <div className="text-center">
           <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
             Our Services & Pricing
@@ -179,131 +232,192 @@ export function PricingTable() {
           </p>
         </div>
 
-        <div className="mt-16 overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm text-muted-foreground">
-              <thead className="bg-muted/50 text-foreground">
-                <tr>
-                  <th scope="col" className="px-6 py-4 font-semibold">
-                    Sl.no.
-                  </th>
-                  <th scope="col" className="px-6 py-4 font-semibold">
-                    Medium Package-1
-                  </th>
-                  <th scope="col" className="px-6 py-4 font-semibold">
-                    Own your Own Server TV Channel (Dedicated)
-                  </th>
-                  <th scope="col" className="px-6 py-4 font-semibold text-right">
-                    Price (Rs.)
-                  </th>
-                  <th scope="col" className="px-6 py-4 font-semibold text-right">
-                    Action
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {services.map((service) => {
-                  const isSelected = selectedIds.has(service.id);
-                  return (
-                    <tr 
-                      key={service.id} 
-                      className={`transition-colors hover:bg-muted/30 ${isSelected ? 'bg-primary/5' : ''}`}
-                    >
-                      <td className="whitespace-nowrap px-6 py-4 font-medium text-foreground">
-                        {service.id}
-                      </td>
-                      <td className="px-6 py-4 font-medium text-foreground">
-                        {service.name}
-                      </td>
-                      <td className="px-6 py-4">
-                        {service.description || "-"}
-                      </td>
-                      <td className="whitespace-nowrap px-6 py-4 text-right font-semibold text-foreground">
-                        {service.price ? `₹${service.price}` : "-"}
-                      </td>
-                      <td className="whitespace-nowrap px-6 py-4 text-right">
-                        {service.price && (
-                          <button 
-                            onClick={() => toggleSelection(service.id)}
-                            className={`rounded-md px-4 py-2 text-xs font-semibold transition ${
-                              isSelected 
-                                ? 'bg-primary text-primary-foreground shadow-sm hover:brightness-110' 
-                                : 'bg-primary/10 text-primary hover:bg-primary/20'
-                            }`}
-                          >
-                            {isSelected ? 'Selected' : 'Select'}
-                          </button>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+        <div className="mt-16 relative">
+          
+          {/* STEP 1: SERVICES TABLE */}
+          {!isCheckoutMode && (
+            <div className="w-full">
+              <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-300 w-full mb-24">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm text-muted-foreground">
+                <thead className="bg-muted/50 text-foreground">
+                  <tr>
+                    <th scope="col" className="px-6 py-4 font-semibold">Sl.no.</th>
+                    <th scope="col" className="px-6 py-4 font-semibold min-w-[200px]">Medium Package-1</th>
+                    <th scope="col" className="px-6 py-4 font-semibold min-w-[300px]">Own your Own Server TV Channel (Dedicated)</th>
+                    <th scope="col" className="px-6 py-4 font-semibold text-right">Price (Rs.)</th>
+                    <th scope="col" className="px-6 py-4 font-semibold text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {services.map((service) => {
+                    const isSelected = selectedIds.has(service.id);
+                    return (
+                      <tr 
+                        key={service.id} 
+                        className={`transition-colors hover:bg-muted/30 ${isSelected ? 'bg-primary/5' : ''}`}
+                      >
+                        <td className="whitespace-nowrap px-6 py-4 font-medium text-foreground">{service.id}</td>
+                        <td className="px-6 py-4 font-medium text-foreground">{service.name}</td>
+                        <td className="px-6 py-4">{service.description || "-"}</td>
+                        <td className="whitespace-nowrap px-6 py-4 text-right font-semibold text-foreground">
+                          {service.price ? `₹${service.price}` : "-"}
+                        </td>
+                        <td className="whitespace-nowrap px-6 py-4 text-right">
+                          {service.price && (
+                            <button 
+                              onClick={() => toggleSelection(service.id)}
+                              className={`rounded-md px-4 py-2 text-xs font-semibold transition ${
+                                isSelected 
+                                  ? 'bg-primary text-primary-foreground shadow-sm hover:brightness-110' 
+                                  : 'bg-primary/10 text-primary hover:bg-primary/20'
+                              }`}
+                            >
+                              {isSelected ? 'Selected' : 'Select'}
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
-        
-        {/* Summary & Checkout Section */}
-        {selectedIds.size > 0 && (
-          <div className="mt-8 rounded-2xl border border-primary/20 bg-primary/5 p-6 md:p-8 shadow-sm transition-all animate-in fade-in slide-in-from-bottom-4">
-            <div className="flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
-              <div className="flex-1">
-                <h3 className="text-xl font-bold text-foreground">Selected Services</h3>
-                <ul className="mt-4 space-y-2">
+        )}
+
+          {/* FLOATING CART BAR (When in selection mode) */}
+          {!isCheckoutMode && selectedIds.size > 0 && (
+            <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-4xl z-50 animate-in slide-in-from-bottom-8 fade-in duration-300">
+              <div className="bg-foreground text-background rounded-full shadow-2xl p-4 px-6 md:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 border border-border/20 backdrop-blur-md">
+                <div className="flex items-center gap-4">
+                  <div className="bg-background/20 rounded-full h-10 w-10 flex items-center justify-center font-bold text-lg">
+                    {selectedIds.size}
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium opacity-80">Selected Services</p>
+                    <p className="text-xl font-bold">₹{subTotalAmount}</p>
+                    <p className="text-[10px] font-medium opacity-70 mt-0.5">+ 18% GST will be added at checkout</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setIsCheckoutMode(true)}
+                  className="bg-primary text-primary-foreground hover:brightness-110 px-8 py-3 rounded-full font-bold shadow-lg transition-transform hover:scale-105 active:scale-95 whitespace-nowrap"
+                >
+                  Proceed to Checkout →
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* STEP 2: FULL PAGE CHECKOUT */}
+          {isCheckoutMode && selectedIds.size > 0 && (
+            <div className="w-full animate-in fade-in slide-in-from-bottom-8 duration-500">
+              <button 
+                onClick={() => setIsCheckoutMode(false)}
+                className="mb-8 flex items-center gap-2 text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors"
+              >
+                ← Back to Services
+              </button>
+              
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start max-w-6xl mx-auto">
+              
+              {/* Left Column: Selected Services Summary */}
+              <div className="w-full rounded-3xl border border-border bg-card p-8 md:p-10 shadow-sm">
+                <div className="flex items-center justify-between border-b border-border/50 pb-6 mb-6">
+                  <h3 className="text-2xl font-bold text-foreground">Order Summary</h3>
+                  <span className="bg-primary/10 text-primary font-bold px-3 py-1 rounded-full text-sm">{selectedIds.size} items</span>
+                </div>
+                <ul className="space-y-4">
                   {selectedServices.map(s => (
-                    <li key={s.id} className="flex justify-between text-sm text-muted-foreground border-b border-primary/10 pb-2">
-                      <span>{s.name}</span>
-                      <span className="font-medium text-foreground">₹{s.price}</span>
+                    <li key={s.id} className="flex justify-between items-start text-base text-muted-foreground border-b border-border/30 pb-4">
+                      <span className="pr-4">{s.name}</span>
+                      <span className="font-semibold text-foreground whitespace-nowrap">₹{s.price}</span>
                     </li>
                   ))}
                 </ul>
-                <div className="mt-4 flex justify-between border-t border-primary/20 pt-4 text-lg font-bold text-foreground">
-                  <span>Total Amount</span>
-                  <span>₹{totalAmount}</span>
+                <div className="mt-6 flex justify-between items-end border-t border-border/30 pt-4">
+                  <p className="text-sm text-muted-foreground font-medium">Subtotal</p>
+                  <span className="text-base font-semibold text-foreground">₹{subTotalAmount}</span>
                 </div>
-                
-                {!showQR && (
-                  <button 
-                    onClick={() => setShowQR(true)}
-                    className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-md bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-md transition hover:brightness-110 md:w-auto"
-                  >
-                    Proceed to Pay ₹{totalAmount}
-                  </button>
-                )}
+                <div className="mt-2 flex justify-between items-end">
+                  <p className="text-sm text-muted-foreground font-medium">GST (18%)</p>
+                  <span className="text-base font-semibold text-foreground">₹{gstAmount}</span>
+                </div>
+                <div className="mt-4 flex justify-between items-end border-t border-border pt-4">
+                  <div>
+                    <p className="text-sm text-muted-foreground font-medium uppercase tracking-wider">Total Due</p>
+                    <p className="text-xs text-muted-foreground mt-1">Includes all taxes and fees</p>
+                  </div>
+                  <span className="text-3xl font-black text-foreground">₹{totalAmount}</span>
+                </div>
               </div>
-              
-              {showQR && (
-                <div className="flex flex-col items-center justify-center animate-in zoom-in-95 mt-6 w-full max-w-sm">
-                  <div className="bg-[#0a2e7a] text-white w-full rounded-2xl overflow-hidden shadow-xl border border-[#0a2e7a]/20">
-                    <div className="p-6 pb-4 text-center">
-                      <h4 className="text-2xl font-bold mb-5 tracking-tight">Scan QR to pay</h4>
-                      
-                      <div className="border border-white/40 rounded-lg p-3 text-center mb-6">
-                        <h5 className="font-bold text-lg leading-tight tracking-wide">CDTECH INNOVATIONS PVT LTD</h5>
-                        <p className="text-sm text-white/80 mt-1 uppercase tracking-widest font-medium">CHENNA | TID: 62289923</p>
+
+              {/* Right Column: Form or QR Code */}
+              <div className="w-full rounded-3xl border border-primary/20 bg-primary/5 p-8 md:p-10 shadow-lg relative overflow-hidden">
+                {/* Decorative background element */}
+                <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
+                
+                <div className="relative z-10">
+                {checkoutStep !== 'pay' ? (
+                  <div>
+                    <h4 className="text-2xl font-bold text-foreground mb-2">Your Details</h4>
+                    <p className="text-sm text-muted-foreground mb-8">Please provide your details below to reveal the secure payment QR code.</p>
+                    <form onSubmit={handleRegistration} className="space-y-5">
+                      <div>
+                        <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Full Name</label>
+                        <input name="name" required className="mt-1.5 w-full rounded-xl border border-border/50 bg-background/50 px-4 py-3 text-base outline-none focus:border-primary/60 focus:ring-2 focus:ring-primary/20 transition-all shadow-sm" placeholder="John Doe" />
+                      </div>
+                      <div>
+                        <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Email Address</label>
+                        <input type="email" name="email" required className="mt-1.5 w-full rounded-xl border border-border/50 bg-background/50 px-4 py-3 text-base outline-none focus:border-primary/60 focus:ring-2 focus:ring-primary/20 transition-all shadow-sm" placeholder="john@example.com" />
+                      </div>
+                      <div>
+                        <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Mobile Number</label>
+                        <input type="tel" name="phone" required className="mt-1.5 w-full rounded-xl border border-border/50 bg-background/50 px-4 py-3 text-base outline-none focus:border-primary/60 focus:ring-2 focus:ring-primary/20 transition-all shadow-sm" placeholder="+91 XXXXX XXXXX" />
                       </div>
                       
-                      <div className="bg-white rounded-2xl p-4 mx-auto shadow-inner overflow-hidden w-fit relative flex items-center justify-center">
+                      {checkoutError && (
+                        <div className="text-xs text-destructive bg-destructive/10 p-2 rounded-md border border-destructive/20">{checkoutError}</div>
+                      )}
+                      
+                      <button 
+                        type="submit" 
+                        disabled={isSubmitting}
+                        className="mt-6 w-full rounded-xl bg-primary py-4 text-base font-bold text-primary-foreground shadow-xl shadow-primary/20 hover:brightness-110 disabled:opacity-50 transition-all transform hover:-translate-y-0.5 active:translate-y-0"
+                      >
+                        {isSubmitting ? 'Processing...' : 'Complete Order & Pay'}
+                      </button>
+                    </form>
+                  </div>
+                ) : (
+                  <div className="bg-background/80 backdrop-blur border border-primary/20 p-8 rounded-2xl shadow-sm text-center animate-in zoom-in-95 fade-in duration-500">
+                    <div className="bg-primary/10 text-primary w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                    </div>
+                    <h4 className="text-2xl font-bold text-foreground mb-2">Order Confirmed!</h4>
+                    <p className="text-base text-muted-foreground mb-8">Scan the QR below with any UPI app to securely pay <strong className="text-foreground">₹{totalAmount}</strong></p>
+                    
+                    <div className="mx-auto bg-white p-6 rounded-2xl shadow-md inline-block border border-border transition-transform hover:scale-105">
+                      <div className="mb-4 border-b border-border/50 pb-4">
+                        <h5 className="font-bold text-lg text-slate-900 tracking-tight">CDTECH INNOVATIONS</h5>
+                        <p className="text-xs text-slate-500 font-semibold tracking-widest mt-1">HDFC BANK • TID: 62289923</p>
+                      </div>
+                      <div className="bg-white mx-auto flex justify-center">
                         <QRCode value={upiUrl} size={220} />
                       </div>
                     </div>
                     
-                    <div className="bg-gradient-to-b from-[#0a2e7a] to-[#254b99] px-6 pb-6 pt-2 text-center">
-                      <p className="text-[13px] font-medium leading-tight">
-                        Customers can scan the QR with any BharatQR/UPI enabled app
-                      </p>
-                      <div className="mt-4 inline-block bg-white/10 px-4 py-2 rounded-full border border-white/20">
-                        <p className="text-sm text-white font-semibold">
-                          Pay exactly <span className="text-xl ml-1">₹{totalAmount}</span>
-                        </p>
-                      </div>
-                    </div>
+                    <p className="mt-8 text-sm text-muted-foreground bg-muted/50 p-4 rounded-xl">Your order details have been securely saved to our system. Our team will contact you shortly after successful payment.</p>
                   </div>
+                )}
                 </div>
-              )}
+              </div>
             </div>
           </div>
-        )}
+          )}
+        </div>
       </div>
     </section>
   );

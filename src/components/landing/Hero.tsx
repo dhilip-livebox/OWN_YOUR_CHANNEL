@@ -1,6 +1,7 @@
 import { motion, useReducedMotion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { PlayCircle } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 
 const headlines = [
   "Build your own live tv chanell",
@@ -55,18 +56,18 @@ export function Hero() {
           </p>
 
           <div className="mt-8 flex flex-wrap gap-3">
-            <a
-              href="#register"
+            <Link
+              to="/purchase"
               className="group inline-flex items-center gap-2 rounded-md bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-[0_0_0_1px_color-mix(in_oklch,var(--primary)_60%,transparent),0_10px_40px_-10px_color-mix(in_oklch,var(--primary)_60%,transparent)] transition hover:brightness-110 hover:scale-[1.02]"
             >
-              Register Free &amp; Get Instant Access
+              View Pricing & Packages
               <span className="transition group-hover:translate-x-0.5">→</span>
-            </a>
+            </Link>
             <a
-              href="#journey"
+              href="/#register"
               className="inline-flex items-center gap-2 rounded-md border border-border bg-transparent px-6 py-3 text-sm font-semibold text-foreground transition hover:border-accent/50 hover:text-accent"
             >
-              <PlayCircle className="h-4 w-4" /> See how it works
+              Get Free Consultation
             </a>
           </div>
         </div>

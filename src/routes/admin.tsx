@@ -1,5 +1,4 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
-import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -11,8 +10,8 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { LogOut, Lock, ExternalLink } from "lucide-react";
-import { adminLogin, adminLogout, adminStatus, getLeadStats } from "@/lib/admin.functions";
+import { LogOut, Lock, ExternalLink, Save, Plus, Trash2 } from "lucide-react";
+import { adminLogin, adminLogout, adminStatus, getLeadStats, getPricing, updatePricing, PricingService } from "@/lib/admin.functions";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
@@ -57,7 +56,7 @@ function AdminPage() {
 }
 
 function LoginForm({ onUnlock }: { onUnlock: () => void }) {
-  const login = useServerFn(adminLogin);
+  const login = adminLogin;
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -68,7 +67,7 @@ function LoginForm({ onUnlock }: { onUnlock: () => void }) {
         setErr(null);
         setBusy(true);
         const password = new FormData(e.currentTarget).get("password") as string;
-        const res = await login({ data: { password } });
+        const res = await login({ password });
         setBusy(false);
         if (res.ok) onUnlock();
         else setErr(res.error ?? "Login failed");
@@ -105,7 +104,7 @@ function LoginForm({ onUnlock }: { onUnlock: () => void }) {
 }
 
 function LogoutButton({ onOut }: { onOut: () => void }) {
-  const logout = useServerFn(adminLogout);
+  const logout = adminLogout;
   return (
     <button
       onClick={async () => {
@@ -120,12 +119,38 @@ function LogoutButton({ onOut }: { onOut: () => void }) {
 }
 
 function Dashboard() {
-  const fetchStats = useServerFn(getLeadStats);
+  const [activeTab, setActiveTab] = useState<'stats' | 'pricing'>('stats');
+  
+  return (
+    <div>
+      <div className="mb-6 flex gap-4 border-b border-border pb-px">
+        <button
+          onClick={() => setActiveTab('stats')}
+          className={`pb-3 text-sm font-medium transition-colors ${activeTab === 'stats' ? 'border-b-2 border-primary text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+        >
+          Registration Stats
+        </button>
+        <button
+          onClick={() => setActiveTab('pricing')}
+          className={`pb-3 text-sm font-medium transition-colors ${activeTab === 'pricing' ? 'border-b-2 border-primary text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+        >
+          Manage Pricing
+        </button>
+      </div>
+      
+      {activeTab === 'stats' ? <StatsView /> : <PricingView />}
+    </div>
+  );
+}
+
+function StatsView() {
+  const fetchStats = getLeadStats;
   const { data, isLoading, error } = useQuery({
     queryKey: ["lead-stats"],
     queryFn: () => fetchStats(),
     refetchInterval: 30_000,
   });
+
 
   useEffect(() => {
     // no-op
@@ -213,5 +238,110 @@ function Dashboard() {
         </div>
       </div>
     </>
+  );
+}
+
+function PricingView() {
+  const { data: initialData, isLoading, refetch } = useQuery({
+    queryKey: ["admin-pricing"],
+    queryFn: getPricing,
+  });
+
+  const [services, setServices] = useState<PricingService[]>([]);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (initialData) {
+      setServices(initialData);
+    }
+  }, [initialData]);
+
+  const handleSave = async () => {
+    setIsSaving(true);
+    setSaveStatus(null);
+    const res = await updatePricing(services);
+    setIsSaving(false);
+    if (res.ok) {
+      setSaveStatus("Saved successfully!");
+      refetch();
+      setTimeout(() => setSaveStatus(null), 3000);
+    } else {
+      setSaveStatus("Failed to save: " + res.error);
+    }
+  };
+
+  const updateService = (index: number, field: keyof PricingService, value: any) => {
+    const next = [...services];
+    next[index] = { ...next[index], [field]: value };
+    setServices(next);
+  };
+
+  if (isLoading) return <div className="text-muted-foreground">Loading pricing…</div>;
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h3 className="font-display text-lg font-semibold">Pricing Configuration</h3>
+        <div className="flex items-center gap-4">
+          {saveStatus && <span className="text-sm text-primary">{saveStatus}</span>}
+          <button
+            onClick={handleSave}
+            disabled={isSaving}
+            className="flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:brightness-110 disabled:opacity-50"
+          >
+            <Save className="h-4 w-4" />
+            {isSaving ? "Saving..." : "Save Changes"}
+          </button>
+        </div>
+      </div>
+
+      <div className="card-surface overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm">
+            <thead className="bg-muted/50">
+              <tr>
+                <th className="px-4 py-3 font-medium">ID</th>
+                <th className="px-4 py-3 font-medium">Service Name</th>
+                <th className="px-4 py-3 font-medium">Description</th>
+                <th className="px-4 py-3 font-medium w-32">Price (₹)</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {services.map((svc, i) => (
+                <tr key={svc.id}>
+                  <td className="px-4 py-3 text-muted-foreground">{svc.id}</td>
+                  <td className="px-4 py-3">
+                    <input
+                      type="text"
+                      value={svc.name}
+                      onChange={(e) => updateService(i, 'name', e.target.value)}
+                      className="w-full rounded border border-border/50 bg-background px-2 py-1 outline-none focus:border-primary/50"
+                    />
+                  </td>
+                  <td className="px-4 py-3">
+                    <input
+                      type="text"
+                      value={svc.description}
+                      onChange={(e) => updateService(i, 'description', e.target.value)}
+                      className="w-full rounded border border-border/50 bg-background px-2 py-1 outline-none focus:border-primary/50"
+                    />
+                  </td>
+                  <td className="px-4 py-3">
+                    <input
+                      type="number"
+                      value={svc.price === null ? "" : svc.price}
+                      onChange={(e) => updateService(i, 'price', e.target.value ? Number(e.target.value) : null)}
+                      className="w-full rounded border border-border/50 bg-background px-2 py-1 outline-none focus:border-primary/50"
+                      placeholder="N/A"
+                    />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
   );
 }
