@@ -13,7 +13,7 @@ import {
 import { LogOut, Lock, ExternalLink, Save, Plus, Trash2 } from "lucide-react";
 import { adminLogin, adminLogout, adminStatus, getLeadStats, getPricing, updatePricing, PricingService } from "@/lib/admin.functions";
 
-export const Route = createFileRoute("/admin")({
+export const Route = createFileRoute("/dashboard")({
   head: () => ({
     meta: [
       { title: "Admin — Ai ivb7" },
