@@ -19,31 +19,39 @@ function emptyStats(): LeadStats {
 }
 
 export const adminLogin = async (data: { password: string }) => {
-  // Using a simple local check or relying on the Google Sheets script to verify.
-  // For a purely static frontend without Node.js, we check a predefined password or a hash.
-  // Since we don't have the process.env from the server, we will hardcode a basic password hash check
-  // or simple match here. For demonstration:
-  
-  if (data.password === "admin123") { // Please update this to a secure hash or API call
-    localStorage.setItem("admin_unlocked", "true");
+  if (data.password === "admin123") {
+    // 1 hour session (60 minutes * 60 seconds * 1000 ms)
+    const expiry = new Date().getTime() + 60 * 60 * 1000;
+    localStorage.setItem("admin_session_expiry", expiry.toString());
+    // Also remove the old legacy key if it exists
+    localStorage.removeItem("admin_unlocked");
     return { ok: true as const };
   }
   return { ok: false as const, error: "Incorrect password" };
 };
 
 export const adminLogout = async () => {
-  localStorage.removeItem("admin_unlocked");
+  localStorage.removeItem("admin_session_expiry");
   return { ok: true as const };
 };
 
 export const adminStatus = async () => {
-  const unlocked = localStorage.getItem("admin_unlocked") === "true";
-  return { unlocked };
+  const expiryStr = localStorage.getItem("admin_session_expiry");
+  if (!expiryStr) return { unlocked: false };
+  
+  const expiry = parseInt(expiryStr, 10);
+  if (isNaN(expiry) || new Date().getTime() > expiry) {
+    // Session expired
+    localStorage.removeItem("admin_session_expiry");
+    return { unlocked: false };
+  }
+  
+  return { unlocked: true };
 };
 
 export const getLeadStats = async (): Promise<LeadStats> => {
-  const unlocked = localStorage.getItem("admin_unlocked") === "true";
-  if (!unlocked) throw new Error("Unauthorized");
+  const status = await adminStatus();
+  if (!status.unlocked) throw new Error("Unauthorized");
 
   // Hardcode the Google Apps Script endpoint here or use a VITE_ env var
   const endpoint = import.meta.env.VITE_SHEETS_ENDPOINT || "https://script.google.com/macros/s/AKfycbzL5u2QfR4t-P3tW9J7J9jR7J9/exec"; // Update to the actual URL
@@ -89,8 +97,8 @@ export const getPricing = async (): Promise<PricingService[]> => {
 };
 
 export const updatePricing = async (services: PricingService[]) => {
-  const unlocked = localStorage.getItem("admin_unlocked") === "true";
-  if (!unlocked) throw new Error("Unauthorized");
+  const status = await adminStatus();
+  if (!status.unlocked) throw new Error("Unauthorized");
 
   const endpoint = import.meta.env.VITE_SHEETS_ENDPOINT || "https://script.google.com/macros/s/AKfycbzL5u2QfR4t-P3tW9J7J9jR7J9/exec";
   if (!endpoint) throw new Error("No endpoint configured");
