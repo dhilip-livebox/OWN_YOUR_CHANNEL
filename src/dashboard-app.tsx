@@ -17,11 +17,23 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    adminStatus().then((res) => {
-      setUnlocked(res.unlocked);
-      setLoading(false);
-    });
-  }, []);
+    const checkStatus = () => {
+      adminStatus().then((res) => {
+        if (unlocked && !res.unlocked) {
+          // If they were unlocked but are now expired, reload to show login
+          window.location.reload();
+        } else {
+          setUnlocked(res.unlocked);
+          setLoading(false);
+        }
+      });
+    };
+    
+    checkStatus();
+    // Check session status every 1 minute while the page is open
+    const interval = setInterval(checkStatus, 60_000);
+    return () => clearInterval(interval);
+  }, [unlocked]);
 
   if (loading) return <div className="p-10 text-muted-foreground">Checking authentication...</div>;
 
