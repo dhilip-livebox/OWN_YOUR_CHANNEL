@@ -2,153 +2,161 @@ import { Check } from "lucide-react";
 import { useState } from "react";
 import QRCode from "react-qr-code";
 import { useQuery } from "@tanstack/react-query";
-import { getPricing } from "@/lib/admin.functions";
+import { getPricing, getCachedPricingSync } from "@/lib/admin.functions";
+import { computeAnnualPricing, getEffectivePrice, type BillingCycle } from "@/lib/pricing";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 const defaultServices = [
   {
     id: 1,
     name: "Website Hosting Server",
     description: "Server to host built-in Websites, Apps, Streaming & Storage",
-    price: 299,
+    monthlyPrice: 299,
   },
   {
     id: 2,
     name: "Streaming Server",
     description: "Streaming Server to stream to 2 platforms",
-    price: 499,
+    monthlyPrice: 499,
   },
   {
     id: 3,
     name: "Multi-Platform Broadcasting Server",
     description: "with your own logo and name insertion or slide insertion on video player with 1000 GB bandwidth every month. Get your own control panel for managing your server.",
-    price: 499,
+    monthlyPrice: 499,
   },
   {
     id: 4,
     name: "Re-Streaming Server",
     description: "This server takes your feed and re-streams it to multiple servers.- you can also increase the bit rate - for example your internet is very low - this can take and stream even in 4k or full hd from the server.",
-    price: 999,
+    monthlyPrice: 999,
   },
   {
     id: 5,
     name: "AI Automated Live Streaming for streaming",
     description: "without any system and High Speed internet - used for automated Live TV Channel, Automated Scheduled live Streaming all without local system device and internet",
-    price: 1999,
+    monthlyPrice: 1999,
   },
   {
     id: 6,
     name: "No Delay RTMP Server",
     description: "This Server is used for conducting Panel discussions",
-    price: 899,
+    monthlyPrice: 899,
   },
   {
     id: 7,
     name: "SRT Server",
     description: "To Stream to Jio OTT Platform etc.",
-    price: 899,
+    monthlyPrice: 899,
   },
   {
     id: 8,
     name: "RTSP Server",
     description: "To pull videos from IP Cameras",
-    price: 899,
+    monthlyPrice: 899,
   },
   {
     id: 9,
     name: "Streaming Server to push Local TV and Broadcast Receiver box",
     description: "Streaming Server to push to Local MSO through Broadcast receiver Box.",
-    price: 499,
+    monthlyPrice: 499,
   },
   {
     id: 10,
     name: "Playout Server Software",
     description: "with control for Local TV broadcast and TVs In Malls and other public places with control system",
-    price: 499,
+    monthlyPrice: 499,
   },
   {
     id: 11,
     name: "Local TV Broadcasting Control Panel and Monitoring Server",
     description: "Monitoring Multiple Broadcast Receiver Boxes at various MSOs",
-    price: 499,
+    monthlyPrice: 499,
   },
   {
     id: 12,
     name: "Live TV Websites for your Channel",
     description: "Live TV Website with your own Name and Logo",
-    price: 299,
+    monthlyPrice: 299,
   },
   {
     id: 13,
     name: "Live TV Andorid App",
     description: "Android App - APK with your own Name and Logo",
-    price: 499,
+    monthlyPrice: 499,
   },
   {
     id: 14,
     name: "Direct broadcast to Mobile App",
     description: "Direct to Mobile App with your own Name and logo - Broadcast direct to all Mobiles without any 3rd party controls",
-    price: 899,
+    monthlyPrice: 899,
   },
   {
     id: 15,
     name: "Storage",
     description: "50 GB (Rs.50 per GB)",
-    price: 500,
+    monthlyPrice: 500,
   },
   {
     id: 16,
     name: "Bandwidth",
     description: "3000 GB per month (Rs.1 per GB BW)",
-    price: 500,
+    monthlyPrice: 500,
   },
   {
     id: 17,
     name: "Server Analytics",
     description: "Shows each viewer location, time, duration and the bandwidth used for viewing with IP address",
-    price: null,
+    monthlyPrice: null,
   },
   {
     id: 18,
     name: "Dual Control Panel",
     description: "3 levels of Controls",
-    price: null,
+    monthlyPrice: null,
   },
   {
     id: 19,
     name: "White labeled Video Player",
     description: "Have your own logo for each program or also have it as a slide in between programs",
-    price: 499,
+    monthlyPrice: 499,
   },
   {
     id: 20,
     name: "IPTV & OTT Server",
     description: "",
-    price: 7999,
+    monthlyPrice: 7999,
   },
   {
     id: 21,
     name: "Transcoding Server",
     description: "",
-    price: 5999,
+    monthlyPrice: 5999,
   },
   {
     id: 22,
     name: "Radio Channel Single",
     description: "",
-    price: 999,
+    monthlyPrice: 999,
   },
   {
     id: 23,
     name: "Radio Station Multiple",
     description: "",
-    price: 4999,
+    monthlyPrice: 4999,
   },
-];
+].map((s) => ({
+  ...s,
+  monthlyOfferPrice: null as number | null,
+  annualDiscountPercent: 0,
+}));
 
 export function PricingTable() {
   const { data: servicesData } = useQuery({
     queryKey: ["pricing"],
     queryFn: getPricing,
+    initialData: getCachedPricingSync,
+    staleTime: 60_000,
   });
   
   const services = servicesData && servicesData.length > 0 ? servicesData : defaultServices;
@@ -157,6 +165,7 @@ export function PricingTable() {
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCheckoutMode, setIsCheckoutMode] = useState(false);
+  const [cycle, setCycle] = useState<BillingCycle>("monthly");
 
   const toggleSelection = (id: number) => {
     setSelectedIds((prev) => {
@@ -166,11 +175,11 @@ export function PricingTable() {
       } else {
         next.add(id);
       }
+      if (next.size === 0) setIsCheckoutMode(false);
       return next;
     });
     // Reset checkout step if selection changes
     setCheckoutStep('cart');
-    if (next.size === 0) setIsCheckoutMode(false);
   };
 
   const handleRegistration = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -189,7 +198,8 @@ export function PricingTable() {
       services: selectedServicesList,
       subTotal: subTotalAmount,
       gst: gstAmount,
-      amount: totalAmount
+      amount: totalAmount,
+      billingCycle: cycle
     };
 
     const endpoint = import.meta.env.VITE_SHEETS_ENDPOINT || "https://script.google.com/macros/s/AKfycbzL5u2QfR4t-P3tW9J7J9jR7J9/exec";
@@ -212,7 +222,7 @@ export function PricingTable() {
   };
 
   const selectedServices = services.filter((s) => selectedIds.has(s.id));
-  const subTotalAmount = selectedServices.reduce((acc, curr) => acc + (curr.price || 0), 0);
+  const subTotalAmount = selectedServices.reduce((acc, curr) => acc + (getEffectivePrice(curr, cycle) ?? 0), 0);
   const gstAmount = Math.round(subTotalAmount * 0.18);
   const totalAmount = subTotalAmount + gstAmount;
 
@@ -230,10 +240,27 @@ export function PricingTable() {
           <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
             All our Servers are available on a yearly basis. Our Servers are highly cost effective — costing only Rs.299 to Rs.399 per month when taken as a package on a yearly basis.
           </p>
+          {!isCheckoutMode && (
+            <div className="mt-6 flex justify-center">
+              <ToggleGroup
+                type="single"
+                value={cycle}
+                onValueChange={(v) => v && setCycle(v as BillingCycle)}
+                className="rounded-full border border-border bg-card p-1 shadow-sm"
+              >
+                <ToggleGroupItem value="monthly" className="rounded-full px-5 py-2 text-sm font-semibold data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
+                  Monthly
+                </ToggleGroupItem>
+                <ToggleGroupItem value="annual" className="rounded-full px-5 py-2 text-sm font-semibold data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
+                  Annual
+                </ToggleGroupItem>
+              </ToggleGroup>
+            </div>
+          )}
         </div>
 
         <div className="mt-16 relative">
-          
+
           {/* STEP 1: SERVICES TABLE */}
           {!isCheckoutMode && (
             <div className="w-full">
@@ -252,24 +279,52 @@ export function PricingTable() {
                 <tbody className="divide-y divide-border">
                   {services.map((service) => {
                     const isSelected = selectedIds.has(service.id);
+                    const effectivePrice = getEffectivePrice(service, cycle);
+                    const annual = computeAnnualPricing(service);
+                    const hasOffer =
+                      cycle === "monthly" &&
+                      service.monthlyOfferPrice != null &&
+                      service.monthlyPrice != null &&
+                      service.monthlyOfferPrice < service.monthlyPrice;
                     return (
-                      <tr 
-                        key={service.id} 
+                      <tr
+                        key={service.id}
                         className={`transition-colors hover:bg-muted/30 ${isSelected ? 'bg-primary/5' : ''}`}
                       >
                         <td className="whitespace-nowrap px-6 py-4 font-medium text-foreground">{service.id}</td>
                         <td className="px-6 py-4 font-medium text-foreground">{service.name}</td>
                         <td className="px-6 py-4">{service.description || "-"}</td>
                         <td className="whitespace-nowrap px-6 py-4 text-right font-semibold text-foreground">
-                          {service.price ? `₹${service.price}` : "-"}
+                          {effectivePrice != null ? (
+                            <>
+                              {hasOffer && (
+                                <span className="mr-1.5 font-normal text-muted-foreground line-through">
+                                  ₹{service.monthlyPrice}
+                                </span>
+                              )}
+                              {cycle === "annual" && annual.discountPercent! > 0 && (
+                                <span className="mr-1.5 font-normal text-muted-foreground line-through">
+                                  ₹{annual.annualRegularPrice}
+                                </span>
+                              )}
+                              ₹{effectivePrice}
+                              {cycle === "annual" && annual.discountPercent! > 0 && (
+                                <div className="mt-0.5 text-xs font-medium text-primary">
+                                  Save {annual.discountPercent}% · ₹{annual.amountSaved} saved
+                                </div>
+                              )}
+                            </>
+                          ) : (
+                            "-"
+                          )}
                         </td>
                         <td className="whitespace-nowrap px-6 py-4 text-right">
-                          {service.price && (
-                            <button 
+                          {effectivePrice != null && (
+                            <button
                               onClick={() => toggleSelection(service.id)}
                               className={`rounded-md px-4 py-2 text-xs font-semibold transition ${
-                                isSelected 
-                                  ? 'bg-primary text-primary-foreground shadow-sm hover:brightness-110' 
+                                isSelected
+                                  ? 'bg-primary text-primary-foreground shadow-sm hover:brightness-110'
                                   : 'bg-primary/10 text-primary hover:bg-primary/20'
                               }`}
                             >
@@ -327,13 +382,18 @@ export function PricingTable() {
               <div className="w-full rounded-3xl border border-border bg-card p-8 md:p-10 shadow-sm">
                 <div className="flex items-center justify-between border-b border-border/50 pb-6 mb-6">
                   <h3 className="text-2xl font-bold text-foreground">Order Summary</h3>
-                  <span className="bg-primary/10 text-primary font-bold px-3 py-1 rounded-full text-sm">{selectedIds.size} items</span>
+                  <div className="flex items-center gap-2">
+                    <span className="bg-muted text-muted-foreground font-semibold px-3 py-1 rounded-full text-xs uppercase tracking-wide">
+                      {cycle === "annual" ? "Annual" : "Monthly"}
+                    </span>
+                    <span className="bg-primary/10 text-primary font-bold px-3 py-1 rounded-full text-sm">{selectedIds.size} items</span>
+                  </div>
                 </div>
                 <ul className="space-y-4">
                   {selectedServices.map(s => (
                     <li key={s.id} className="flex justify-between items-start text-base text-muted-foreground border-b border-border/30 pb-4">
                       <span className="pr-4">{s.name}</span>
-                      <span className="font-semibold text-foreground whitespace-nowrap">₹{s.price}</span>
+                      <span className="font-semibold text-foreground whitespace-nowrap">₹{getEffectivePrice(s, cycle)}</span>
                     </li>
                   ))}
                 </ul>

@@ -27,14 +27,24 @@ function doPost(e) {
        if (!sheet) {
          sheet = spreadsheet.insertSheet('AI-TV-Channel-Pricing');
        }
-       sheet.clear();
-       sheet.appendRow(["id", "name", "description", "price"]);
-       sheet.getRange(1, 1, 1, 4).setFontWeight('bold');
+       if (sheet.getMaxColumns() < 6) {
+         sheet.insertColumnsAfter(sheet.getMaxColumns(), 6 - sheet.getMaxColumns());
+       }
+       if (sheet.getLastRow() > 0) {
+         sheet.getDataRange().clearContent();
+       }
+       sheet.appendRow(["id", "name", "description", "monthlyPrice", "monthlyOfferPrice", "annualDiscountPercent"]);
+       sheet.getRange(1, 1, 1, 6).setFontWeight('bold');
        if (body.services && body.services.length > 0) {
          var data = body.services.map(function(s) {
-           return [s.id, s.name, s.description || "", s.price === null ? "" : s.price];
+           return [
+             s.id, s.name, s.description || "",
+             s.monthlyPrice === null || s.monthlyPrice === undefined ? "" : s.monthlyPrice,
+             s.monthlyOfferPrice === null || s.monthlyOfferPrice === undefined ? "" : s.monthlyOfferPrice,
+             s.annualDiscountPercent || 0
+           ];
          });
-         sheet.getRange(2, 1, data.length, 4).setValues(data);
+         sheet.getRange(2, 1, data.length, 6).setValues(data);
        }
        return json({ ok: true });
     } else if (body.type === 'checkout') {
@@ -44,9 +54,11 @@ function doPost(e) {
       }
       if (sheet.getLastRow() === 0) {
         sheet.appendRow([
-          'Timestamp', 'Name', 'Email', 'Phone', 'Selected Services', 'Subtotal', 'GST', 'Total Amount'
+          'Timestamp', 'Name', 'Email', 'Phone', 'Selected Services', 'Subtotal', 'GST', 'Total Amount', 'Billing Cycle'
         ]);
-        sheet.getRange(1, 1, 1, 8).setFontWeight('bold');
+        sheet.getRange(1, 1, 1, 9).setFontWeight('bold');
+      } else if (sheet.getRange(1, 9).getValue() !== 'Billing Cycle') {
+        sheet.getRange(1, 9).setValue('Billing Cycle').setFontWeight('bold');
       }
       sheet.appendRow([
         new Date(),
@@ -56,7 +68,8 @@ function doPost(e) {
         body.services || '',
         body.subTotal || 0,
         body.gst || 0,
-        body.amount || 0
+        body.amount || 0,
+        body.billingCycle || ''
       ]);
       return json({ ok: true });
     } else if (body.type === 'consultation' || !body.type) {
@@ -100,42 +113,47 @@ function doGet(e) {
       if (!sheet) {
         sheet = spreadsheet.insertSheet('AI-TV-Channel-Pricing');
         var defaultServices = [
-          [1, "Website Hosting Server", "Server to host built-in Websites, Apps, Streaming & Storage", 299],
-          [2, "Streaming Server", "Streaming Server to stream to 2 platforms", 499],
-          [3, "Multi-Platform Broadcasting Server", "with your own logo and name insertion or slide insertion on video player with 1000 GB bandwidth every month. Get your own control panel for managing your server.", 499],
-          [4, "Re-Streaming Server", "This server takes your feed and re-streams it to multiple servers.- you can also increase the bit rate - for example your internet is very low - this can take and stream even in 4k or full hd from the server.", 999],
-          [5, "AI Automated Live Streaming for streaming", "without any system and High Speed internet - used for automated Live TV Channel, Automated Scheduled live Streaming all without local system device and internet", 1999],
-          [6, "No Delay RTMP Server", "This Server is used for conducting Panel discussions", 899],
-          [7, "SRT Server", "To Stream to Jio OTT Platform etc.", 899],
-          [8, "RTSP Server", "To pull videos from IP Cameras", 899],
-          [9, "Streaming Server to push Local TV and Broadcast Receiver box", "Streaming Server to push to Local MSO through Broadcast receiver Box.", 499],
-          [10, "Playout Server Software", "with control for Local TV broadcast and TVs In Malls and other public places with control system", 499],
-          [11, "Local TV Broadcasting Control Panel and Monitoring Server", "Monitoring Multiple Broadcast Receiver Boxes at various MSOs", 499],
-          [12, "Live TV Websites for your Channel", "Live TV Website with your own Name and Logo", 299],
-          [13, "Live TV Andorid App", "Android App - APK with your own Name and Logo", 499],
-          [14, "Direct broadcast to Mobile App", "Direct to Mobile App with your own Name and logo - Broadcast direct to all Mobiles without any 3rd party controls", 899],
-          [15, "Storage", "50 GB (Rs.50 per GB)", 500],
-          [16, "Bandwidth", "3000 GB per month (Rs.1 per GB BW)", 500],
-          [17, "Server Analytics", "Shows each viewer location, time, duration and the bandwidth used for viewing with IP address", ""],
-          [18, "Dual Control Panel", "3 levels of Controls", ""],
-          [19, "White labeled Video Player", "Have your own logo for each program or also have it as a slide in between programs", 499],
-          [20, "IPTV & OTT Server", "", 7999],
-          [21, "Transcoding Server", "", 5999],
-          [22, "Radio Channel Single", "", 999],
-          [23, "Radio Station Multiple", "", 4999]
+          [1, "Website Hosting Server", "Server to host built-in Websites, Apps, Streaming & Storage", 299, "", 0],
+          [2, "Streaming Server", "Streaming Server to stream to 2 platforms", 499, "", 0],
+          [3, "Multi-Platform Broadcasting Server", "with your own logo and name insertion or slide insertion on video player with 1000 GB bandwidth every month. Get your own control panel for managing your server.", 499, "", 0],
+          [4, "Re-Streaming Server", "This server takes your feed and re-streams it to multiple servers.- you can also increase the bit rate - for example your internet is very low - this can take and stream even in 4k or full hd from the server.", 999, "", 0],
+          [5, "AI Automated Live Streaming for streaming", "without any system and High Speed internet - used for automated Live TV Channel, Automated Scheduled live Streaming all without local system device and internet", 1999, "", 0],
+          [6, "No Delay RTMP Server", "This Server is used for conducting Panel discussions", 899, "", 0],
+          [7, "SRT Server", "To Stream to Jio OTT Platform etc.", 899, "", 0],
+          [8, "RTSP Server", "To pull videos from IP Cameras", 899, "", 0],
+          [9, "Streaming Server to push Local TV and Broadcast Receiver box", "Streaming Server to push to Local MSO through Broadcast receiver Box.", 499, "", 0],
+          [10, "Playout Server Software", "with control for Local TV broadcast and TVs In Malls and other public places with control system", 499, "", 0],
+          [11, "Local TV Broadcasting Control Panel and Monitoring Server", "Monitoring Multiple Broadcast Receiver Boxes at various MSOs", 499, "", 0],
+          [12, "Live TV Websites for your Channel", "Live TV Website with your own Name and Logo", 299, "", 0],
+          [13, "Live TV Andorid App", "Android App - APK with your own Name and Logo", 499, "", 0],
+          [14, "Direct broadcast to Mobile App", "Direct to Mobile App with your own Name and logo - Broadcast direct to all Mobiles without any 3rd party controls", 899, "", 0],
+          [15, "Storage", "50 GB (Rs.50 per GB)", 500, "", 0],
+          [16, "Bandwidth", "3000 GB per month (Rs.1 per GB BW)", 500, "", 0],
+          [17, "Server Analytics", "Shows each viewer location, time, duration and the bandwidth used for viewing with IP address", "", "", 0],
+          [18, "Dual Control Panel", "3 levels of Controls", "", "", 0],
+          [19, "White labeled Video Player", "Have your own logo for each program or also have it as a slide in between programs", 499, "", 0],
+          [20, "IPTV & OTT Server", "", 7999, "", 0],
+          [21, "Transcoding Server", "", 5999, "", 0],
+          [22, "Radio Channel Single", "", 999, "", 0],
+          [23, "Radio Station Multiple", "", 4999, "", 0]
         ];
-        sheet.appendRow(["id", "name", "description", "price"]);
-        sheet.getRange(1, 1, 1, 4).setFontWeight('bold');
-        sheet.getRange(2, 1, defaultServices.length, 4).setValues(defaultServices);
+        sheet.appendRow(["id", "name", "description", "monthlyPrice", "monthlyOfferPrice", "annualDiscountPercent"]);
+        sheet.getRange(1, 1, 1, 6).setFontWeight('bold');
+        sheet.getRange(2, 1, defaultServices.length, 6).setValues(defaultServices);
+      }
+      if (sheet.getMaxColumns() < 6) {
+        sheet.insertColumnsAfter(sheet.getMaxColumns(), 6 - sheet.getMaxColumns());
       }
       var lastRow = sheet.getLastRow();
-      var rows = lastRow > 1 ? sheet.getRange(2, 1, lastRow - 1, 4).getValues() : [];
+      var rows = lastRow > 1 ? sheet.getRange(2, 1, lastRow - 1, 6).getValues() : [];
       var services = rows.map(function(r) {
         return {
           id: r[0],
           name: r[1],
           description: r[2],
-          price: r[3] === "" ? null : Number(r[3])
+          monthlyPrice: r[3] === "" ? null : Number(r[3]),
+          monthlyOfferPrice: r[4] === "" ? null : Number(r[4]),
+          annualDiscountPercent: r[5] === "" ? 0 : Number(r[5])
         };
       });
       return json({ services: services });

@@ -10,7 +10,8 @@ import {
   YAxis,
 } from "recharts";
 import { LogOut, Lock, ExternalLink, Save, Plus, Trash2 } from "lucide-react";
-import { adminLogin, adminLogout, adminStatus, getLeadStats, getPricing, updatePricing, PricingService } from "@/lib/admin.functions";
+import { adminLogin, adminLogout, adminStatus, getLeadStats, getPricing, updatePricing, getCachedPricingSync, PricingService } from "@/lib/admin.functions";
+import { computeAnnualPricing, percentFromAnnualPrice } from "@/lib/pricing";
 
 export default function AdminPage() {
   const [unlocked, setUnlocked] = useState(false);
@@ -249,9 +250,11 @@ function StatsView() {
 }
 
 function PricingView() {
-  const { data: initialData, isLoading, refetch } = useQuery({
+  const { data: initialData, isLoading } = useQuery({
     queryKey: ["admin-pricing"],
     queryFn: getPricing,
+    initialData: getCachedPricingSync,
+    staleTime: 60_000,
   });
 
   const [services, setServices] = useState<PricingService[]>([]);
@@ -267,14 +270,14 @@ function PricingView() {
   const handleSave = async () => {
     setIsSaving(true);
     setSaveStatus(null);
-    const res = await updatePricing(services);
-    setIsSaving(false);
-    if (res.ok) {
-      setSaveStatus("Saved successfully!");
-      refetch();
+    try {
+      await updatePricing(services);
+      setSaveStatus("Saved!");
+    } catch (err) {
+      setSaveStatus("Failed to save: " + String(err));
+    } finally {
+      setIsSaving(false);
       setTimeout(() => setSaveStatus(null), 3000);
-    } else {
-      setSaveStatus("Failed to save: " + res.error);
     }
   };
 
@@ -311,40 +314,94 @@ function PricingView() {
                 <th className="px-4 py-3 font-medium">ID</th>
                 <th className="px-4 py-3 font-medium">Service Name</th>
                 <th className="px-4 py-3 font-medium">Description</th>
-                <th className="px-4 py-3 font-medium w-32">Price (₹)</th>
+                <th className="px-4 py-3 font-medium w-28">Monthly (₹)</th>
+                <th className="px-4 py-3 font-medium w-28">Offer (₹)</th>
+                <th className="px-4 py-3 font-medium w-64">Annual Pricing</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {services.map((svc, i) => (
-                <tr key={svc.id}>
-                  <td className="px-4 py-3 text-muted-foreground">{svc.id}</td>
-                  <td className="px-4 py-3">
-                    <input
-                      type="text"
-                      value={svc.name}
-                      onChange={(e) => updateService(i, 'name', e.target.value)}
-                      className="w-full rounded border border-border/50 bg-background px-2 py-1 outline-none focus:border-primary/50"
-                    />
-                  </td>
-                  <td className="px-4 py-3">
-                    <input
-                      type="text"
-                      value={svc.description}
-                      onChange={(e) => updateService(i, 'description', e.target.value)}
-                      className="w-full rounded border border-border/50 bg-background px-2 py-1 outline-none focus:border-primary/50"
-                    />
-                  </td>
-                  <td className="px-4 py-3">
-                    <input
-                      type="number"
-                      value={svc.price === null ? "" : svc.price}
-                      onChange={(e) => updateService(i, 'price', e.target.value ? Number(e.target.value) : null)}
-                      className="w-full rounded border border-border/50 bg-background px-2 py-1 outline-none focus:border-primary/50"
-                      placeholder="N/A"
-                    />
-                  </td>
-                </tr>
-              ))}
+              {services.map((svc, i) => {
+                const preview = computeAnnualPricing(svc);
+                return (
+                  <tr key={svc.id}>
+                    <td className="px-4 py-3 text-muted-foreground">{svc.id}</td>
+                    <td className="px-4 py-3">
+                      <input
+                        type="text"
+                        value={svc.name}
+                        onChange={(e) => updateService(i, 'name', e.target.value)}
+                        className="w-full rounded border border-border/50 bg-background px-2 py-1 outline-none focus:border-primary/50"
+                      />
+                    </td>
+                    <td className="px-4 py-3">
+                      <input
+                        type="text"
+                        value={svc.description}
+                        onChange={(e) => updateService(i, 'description', e.target.value)}
+                        className="w-full rounded border border-border/50 bg-background px-2 py-1 outline-none focus:border-primary/50"
+                      />
+                    </td>
+                    <td className="px-4 py-3">
+                      <input
+                        type="number"
+                        value={svc.monthlyPrice === null ? "" : svc.monthlyPrice}
+                        onChange={(e) => updateService(i, 'monthlyPrice', e.target.value ? Number(e.target.value) : null)}
+                        className="w-full rounded border border-border/50 bg-background px-2 py-1 outline-none focus:border-primary/50"
+                        placeholder="N/A"
+                      />
+                    </td>
+                    <td className="px-4 py-3">
+                      <input
+                        type="number"
+                        value={svc.monthlyOfferPrice === null ? "" : svc.monthlyOfferPrice}
+                        onChange={(e) => updateService(i, 'monthlyOfferPrice', e.target.value ? Number(e.target.value) : null)}
+                        className="w-full rounded border border-border/50 bg-background px-2 py-1 outline-none focus:border-primary/50"
+                        placeholder="None"
+                      />
+                    </td>
+                    <td className="px-4 py-3">
+                      {preview.annualRegularPrice === null ? (
+                        <span className="text-xs text-muted-foreground">-</span>
+                      ) : (
+                        <div className="space-y-1">
+                          {preview.discountPercent! > 0 && (
+                            <div className="text-xs text-muted-foreground line-through">
+                              ₹{preview.annualRegularPrice}/yr
+                            </div>
+                          )}
+                          <div className="flex items-center gap-1">
+                            <input
+                              type="number"
+                              min={0}
+                              value={preview.annualPrice!}
+                              onChange={(e) => {
+                                const typed = e.target.value ? Number(e.target.value) : preview.annualRegularPrice!;
+                                updateService(i, 'annualDiscountPercent', percentFromAnnualPrice(svc.monthlyPrice, typed));
+                              }}
+                              className="w-20 rounded border border-border/50 bg-background px-2 py-1 outline-none focus:border-primary/50"
+                              title="Discounted annual price"
+                            />
+                            <span className="text-xs text-muted-foreground">₹/yr</span>
+                            <input
+                              type="number"
+                              min={0}
+                              max={100}
+                              value={Math.round(svc.annualDiscountPercent)}
+                              onChange={(e) => updateService(i, 'annualDiscountPercent', e.target.value ? Number(e.target.value) : 0)}
+                              className="w-14 rounded border border-border/50 bg-background px-2 py-1 outline-none focus:border-primary/50"
+                              title="Discount percent"
+                            />
+                            <span className="text-xs text-muted-foreground">% off</span>
+                          </div>
+                          {preview.discountPercent! > 0 && (
+                            <div className="text-xs text-primary">Save ₹{preview.amountSaved}</div>
+                          )}
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

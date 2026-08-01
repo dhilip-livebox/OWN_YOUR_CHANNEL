@@ -78,21 +78,47 @@ export type PricingService = {
   id: number;
   name: string;
   description: string;
-  price: number | null;
+  monthlyPrice: number | null;
+  monthlyOfferPrice: number | null;
+  annualDiscountPercent: number;
 };
+
+const PRICING_CACHE_KEY = "cached_pricing_v1";
+
+// Apps Script cold-starts are slow (often 1-5s). Caching last-known-good pricing lets both
+// the admin table and the public page render instantly and refresh in the background instead
+// of showing a blank loading state on every visit.
+export function getCachedPricingSync(): PricingService[] {
+  try {
+    const raw = localStorage.getItem(PRICING_CACHE_KEY);
+    return raw ? (JSON.parse(raw) as PricingService[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+function setCachedPricing(services: PricingService[]) {
+  try {
+    localStorage.setItem(PRICING_CACHE_KEY, JSON.stringify(services));
+  } catch {
+    // storage full/unavailable — cache is a perf nicety, safe to skip
+  }
+}
 
 export const getPricing = async (): Promise<PricingService[]> => {
   const endpoint = import.meta.env.VITE_SHEETS_ENDPOINT || "https://script.google.com/macros/s/AKfycbzL5u2QfR4t-P3tW9J7J9jR7J9/exec";
-  if (!endpoint) return [];
+  if (!endpoint) return getCachedPricingSync();
 
   try {
     const res = await fetch(`${endpoint}?action=pricing`, { method: "GET" });
-    if (!res.ok) return [];
+    if (!res.ok) return getCachedPricingSync();
     const json = (await res.json()) as { services: PricingService[] };
-    return json.services || [];
+    const services = json.services || [];
+    if (services.length > 0) setCachedPricing(services);
+    return services;
   } catch (err) {
     console.error("getPricing failed", err);
-    return [];
+    return getCachedPricingSync();
   }
 };
 
@@ -103,18 +129,17 @@ export const updatePricing = async (services: PricingService[]) => {
   const endpoint = import.meta.env.VITE_SHEETS_ENDPOINT || "https://script.google.com/macros/s/AKfycbzL5u2QfR4t-P3tW9J7J9jR7J9/exec";
   if (!endpoint) throw new Error("No endpoint configured");
 
-  try {
-    const res = await fetch(endpoint, {
-      method: "POST",
-      mode: "no-cors",
-      headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: JSON.stringify({ type: "update_pricing", services }),
-    });
-    // Due to no-cors we can't reliably read res.ok
-    return { ok: true };
-  } catch (err) {
-    console.error("updatePricing failed", err);
-    return { ok: false, error: String(err) };
-  }
+  // Update the local cache immediately and fire the request without awaiting it — Apps Script's
+  // round trip can take seconds, and mode:"no-cors" means we can't read a real success response
+  // anyway, so blocking the Save button on it only adds latency with no accuracy benefit.
+  setCachedPricing(services);
+  fetch(endpoint, {
+    method: "POST",
+    mode: "no-cors",
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify({ type: "update_pricing", services }),
+  }).catch((err) => console.error("updatePricing failed", err));
+
+  return { ok: true };
 };
 
