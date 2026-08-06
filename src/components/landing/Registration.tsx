@@ -111,7 +111,7 @@ export function Registration({ onRegistered }: { onRegistered: () => void }) {
   return (
     <section
       id="register"
-      className="relative mx-auto max-w-[1280px] scroll-mt-20 px-6 py-24"
+      className="relative mx-auto max-w-[1600px] scroll-mt-20 px-6 py-24"
     >
       <motion.div
         initial={{ opacity: 0, y: 16 }}

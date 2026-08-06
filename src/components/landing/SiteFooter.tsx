@@ -4,7 +4,7 @@ import { Link } from "@tanstack/react-router";
 export function SiteFooter() {
   return (
     <footer className="border-t border-border/60 bg-background">
-      <div className="mx-auto grid max-w-[1280px] gap-10 px-6 py-14 md:grid-cols-4">
+      <div className="mx-auto grid max-w-[1600px] gap-10 px-6 py-14 md:grid-cols-4">
         <div className="md:col-span-2">
           <Link to="/" className="flex items-center gap-2">
             <div className="grid h-8 w-8 place-items-center rounded-md bg-primary/15 text-primary ring-1 ring-primary/30">
@@ -54,7 +54,7 @@ export function SiteFooter() {
         </div>
       </div>
       <div className="border-t border-border/60">
-        <div className="mx-auto flex max-w-[1280px] items-center justify-between px-6 py-5 text-xs text-muted-foreground">
+        <div className="mx-auto flex max-w-[1600px] items-center justify-between px-6 py-5 text-xs text-muted-foreground">
           <p>© {new Date().getFullYear()} Ai ivb7. All rights reserved.</p>
           <p>Broadcast tech, reimagined.</p>
         </div>

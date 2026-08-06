@@ -1,12 +1,51 @@
 import { motion, useReducedMotion } from "framer-motion";
 import { useEffect, useState } from "react";
-import { PlayCircle } from "lucide-react";
+import { Camera, CloudDownload, Globe, Mic2, MonitorPlay, PlayCircle, RadioTower } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 
 const headlines = [
   "Build your own live tv chanell",
   "own your chanel",
   "broadcast in multiple platform  without sytem and Local internet",
+];
+
+const heroFeatures = [
+  {
+    icon: MonitorPlay,
+    label: "Professional Playout to Download",
+    description: "Get broadcast-ready playout with graphics, automation and scheduling.",
+    color: "text-cyan-400",
+  },
+  {
+    icon: CloudDownload,
+    label: "Your Own Streaming Platform",
+    description: "Launch your branded streaming platform under your own name.",
+    color: "text-violet-400",
+  },
+  {
+    icon: RadioTower,
+    label: "Stream Everywhere",
+    description: "Stream to multiple social media, OTT, websites, mobile platforms and local TVs.",
+    color: "text-amber-400",
+  },
+  {
+    icon: Camera,
+    label: "Produce Your Own Programs",
+    description: "Create stunning shows, live or recorded, with professional quality.",
+    color: "text-lime-400",
+  },
+  {
+    icon: Mic2,
+    label: "Podcasts & Panel Discussions",
+    description: "Host engaging podcasts and panel discussions that inform and inspire.",
+    color: "text-rose-400",
+  },
+  {
+    icon: Globe,
+    label: "Broadcast to the World",
+    description: "Reach global audiences and grow your brand without limits.",
+    color: "text-sky-400",
+  },
 ];
 
 export function Hero() {
@@ -20,14 +59,14 @@ export function Hero() {
   }, [reduce]);
 
   return (
-    <section className="relative overflow-hidden">
+    <section id="hero" className="relative overflow-hidden">
       {/* radial glows */}
       <div aria-hidden className="pointer-events-none absolute inset-0">
         <div className="absolute left-1/2 top-[10%] h-[520px] w-[520px] -translate-x-1/2 glow-gold opacity-70" />
         <div className="absolute right-[-10%] top-[40%] h-[400px] w-[400px] glow-blue opacity-60" />
       </div>
 
-      <div className="relative mx-auto grid max-w-[1280px] grid-cols-1 items-center gap-12 px-6 py-20 md:py-28 lg:grid-cols-[1.15fr_1fr]">
+      <div className="relative mx-auto grid max-w-[1600px] grid-cols-1 items-center gap-12 px-6 py-20 md:py-28 lg:grid-cols-[1.15fr_1fr]">
         <div>
           <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-border bg-surface/60 px-3 py-1.5 text-xs font-medium text-muted-foreground">
             <span className="relative flex h-2 w-2">
@@ -69,6 +108,16 @@ export function Hero() {
             >
               Get Free Consultation
             </a>
+          </div>
+
+          <div className="mt-10 grid grid-cols-2 gap-x-6 gap-y-6 sm:grid-cols-3">
+            {heroFeatures.map(({ icon: Icon, label, description, color }) => (
+              <div key={label} className="flex flex-col gap-2">
+                <Icon className={`h-6 w-6 ${color}`} />
+                <p className={`text-xs font-bold uppercase tracking-wide ${color}`}>{label}</p>
+                <p className="text-xs leading-relaxed text-muted-foreground">{description}</p>
+              </div>
+            ))}
           </div>
         </div>
 

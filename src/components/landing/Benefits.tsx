@@ -1,5 +1,6 @@
 import { WifiOff, Power, Server, Globe, Wallet } from "lucide-react";
 import { SectionHeading } from "./SectionHeading";
+import { Faq } from "./Faq";
 
 const items = [
   { icon: WifiOff, title: "No high-speed internet needed", body: "Your studio doesn't need a datacenter uplink. Push once — broadcast globally." },
@@ -11,7 +12,7 @@ const items = [
 
 export function Benefits() {
   return (
-    <section id="benefits" className="mx-auto max-w-[1280px] px-6 py-24">
+    <section id="benefits" className="mx-auto max-w-[1600px] px-6 py-24">
       <SectionHeading
         eyebrow="Why your own channel"
         title="Everything a satellite network has. Almost none of the cost."
@@ -28,6 +29,7 @@ export function Benefits() {
           </div>
         ))}
       </div>
+      <Faq />
     </section>
   );
 }

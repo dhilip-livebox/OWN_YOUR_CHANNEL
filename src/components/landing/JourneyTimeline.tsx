@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 
 export function JourneyTimeline() {
   return (
-    <section id="journey" className="mx-auto max-w-[1280px] px-6 py-24">
+    <section id="journey" className="mx-auto max-w-[1600px] px-6 py-24">
       <SectionHeading
         eyebrow="The complete journey"
         title="From idea to a full television network."

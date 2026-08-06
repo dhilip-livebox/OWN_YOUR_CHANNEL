@@ -2,11 +2,10 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { SiteHeader } from "@/components/landing/SiteHeader";
 import { Hero } from "@/components/landing/Hero";
-import { HookStrip } from "@/components/landing/HookStrip";
 import { Benefits } from "@/components/landing/Benefits";
 import { PlatformGrid } from "@/components/landing/PlatformGrid";
 import { JourneyTimeline } from "@/components/landing/JourneyTimeline";
-import { VideoLibrary } from "@/components/landing/VideoLibrary";
+import { ChannelsSection } from "@/components/landing/ChannelsSection";
 import { Registration } from "@/components/landing/Registration";
 import { SocialProof } from "@/components/landing/SocialProof";
 import { SiteFooter } from "@/components/landing/SiteFooter";
@@ -48,11 +47,10 @@ function Landing() {
       <SiteHeader />
       <main>
         <Hero />
-        <HookStrip />
         <Benefits />
         <PlatformGrid />
         <JourneyTimeline />
-        <VideoLibrary registered={registered} />
+        <ChannelsSection registered={registered} />
         <Registration onRegistered={() => setRegistered(true)} />
         <SocialProof />
       </main>

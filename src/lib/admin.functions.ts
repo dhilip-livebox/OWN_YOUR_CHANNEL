@@ -74,6 +74,66 @@ export const getLeadStats = async (): Promise<LeadStats> => {
   }
 };
 
+export type ConsultationLead = {
+  timestamp: string;
+  name: string;
+  phone: string;
+  email: string;
+  country: string;
+  state: string;
+  city: string;
+  language: string;
+  interest: string;
+};
+
+export const getConsultations = async (): Promise<ConsultationLead[]> => {
+  const status = await adminStatus();
+  if (!status.unlocked) throw new Error("Unauthorized");
+
+  const endpoint = import.meta.env.VITE_SHEETS_ENDPOINT || "https://script.google.com/macros/s/AKfycbzL5u2QfR4t-P3tW9J7J9jR7J9/exec";
+  if (!endpoint) return [];
+
+  try {
+    const res = await fetch(`${endpoint}?action=leads`, { method: "GET" });
+    if (!res.ok) return [];
+    const json = (await res.json()) as { leads: ConsultationLead[] };
+    return json.leads || [];
+  } catch (err) {
+    console.error("getConsultations failed", err);
+    return [];
+  }
+};
+
+export type OrderRecord = {
+  timestamp: string;
+  name: string;
+  email: string;
+  phone: string;
+  services: string;
+  subTotal: number;
+  gst: number;
+  amount: number;
+  billingCycle: string;
+};
+
+export const getOrders = async (): Promise<OrderRecord[]> => {
+  const status = await adminStatus();
+  if (!status.unlocked) throw new Error("Unauthorized");
+
+  const endpoint = import.meta.env.VITE_SHEETS_ENDPOINT || "https://script.google.com/macros/s/AKfycbzL5u2QfR4t-P3tW9J7J9jR7J9/exec";
+  if (!endpoint) return [];
+
+  try {
+    const res = await fetch(`${endpoint}?action=orders`, { method: "GET" });
+    if (!res.ok) return [];
+    const json = (await res.json()) as { orders: OrderRecord[] };
+    return json.orders || [];
+  } catch (err) {
+    console.error("getOrders failed", err);
+    return [];
+  }
+};
+
 export type PricingService = {
   id: number;
   name: string;

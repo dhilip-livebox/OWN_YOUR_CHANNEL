@@ -4,7 +4,7 @@ import { SectionHeading } from "./SectionHeading";
 export function PlatformGrid() {
   return (
     <section id="platforms" className="relative border-y border-border/60 bg-surface/40 py-24">
-      <div className="mx-auto max-w-[1280px] px-6">
+      <div className="mx-auto max-w-[1600px] px-6">
         <SectionHeading
           align="center"
           eyebrow="Broadcast everywhere at once"

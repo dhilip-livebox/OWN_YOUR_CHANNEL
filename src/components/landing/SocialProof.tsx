@@ -3,7 +3,7 @@ import { SectionHeading } from "./SectionHeading";
 
 export function SocialProof() {
   return (
-    <section className="mx-auto max-w-[1280px] px-6 py-24">
+    <section className="mx-auto max-w-[1600px] px-6 py-24">
       <SectionHeading
         eyebrow="Live in the wild"
         title="Channels already broadcasting with us."

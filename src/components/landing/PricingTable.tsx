@@ -1,9 +1,11 @@
-import { Check } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import QRCode from "react-qr-code";
 import { useQuery } from "@tanstack/react-query";
+import { useNavigate } from "@tanstack/react-router";
 import { getPricing, getCachedPricingSync } from "@/lib/admin.functions";
 import { computeAnnualPricing, getEffectivePrice, type BillingCycle } from "@/lib/pricing";
+import { getCustomerSession } from "@/lib/customer-auth.functions";
+import { loadCart, saveCart, clearCart } from "@/lib/cart";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 const defaultServices = [
@@ -152,20 +154,29 @@ const defaultServices = [
 }));
 
 export function PricingTable() {
+  const navigate = useNavigate();
   const { data: servicesData } = useQuery({
     queryKey: ["pricing"],
     queryFn: getPricing,
     initialData: getCachedPricingSync,
     staleTime: 60_000,
   });
-  
+
   const services = servicesData && servicesData.length > 0 ? servicesData : defaultServices;
-  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
-  const [checkoutStep, setCheckoutStep] = useState<'cart' | 'register' | 'pay'>('cart');
-  const [checkoutError, setCheckoutError] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(() => new Set(loadCart()?.selectedIds ?? []));
+  const [cycle, setCycle] = useState<BillingCycle>(() => loadCart()?.cycle ?? "monthly");
+  const [checkoutStep, setCheckoutStep] = useState<'cart' | 'pay'>('cart');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isCheckoutMode, setIsCheckoutMode] = useState(false);
-  const [cycle, setCycle] = useState<BillingCycle>("monthly");
+  // Returning from /account with a saved cart + a session should land back in the checkout
+  // panel, not the plain services table — otherwise the redirect round-trip loses the user's place.
+  const [isCheckoutMode, setIsCheckoutMode] = useState(() => {
+    const cart = loadCart();
+    return !!(cart && cart.selectedIds.length > 0 && getCustomerSession());
+  });
+
+  useEffect(() => {
+    saveCart({ selectedIds: Array.from(selectedIds), cycle });
+  }, [selectedIds, cycle]);
 
   const toggleSelection = (id: number) => {
     setSelectedIds((prev) => {
@@ -182,19 +193,22 @@ export function PricingTable() {
     setCheckoutStep('cart');
   };
 
-  const handleRegistration = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setCheckoutError(null);
+  const goToAccount = () => navigate({ to: "/account", search: { redirect: "/purchase" } });
+
+  const handleCheckout = () => {
+    const session = getCustomerSession();
+    if (!session) {
+      goToAccount();
+      return;
+    }
     setIsSubmitting(true);
-    
-    const fd = new FormData(e.currentTarget);
+
     const selectedServicesList = services.filter(s => selectedIds.has(s.id)).map(s => s.name).join(", ");
-    
     const payload = {
       type: 'checkout',
-      name: String(fd.get("name") || ""),
-      email: String(fd.get("email") || ""),
-      phone: String(fd.get("phone") || ""),
+      name: session.name,
+      email: session.email,
+      phone: session.mobile,
       services: selectedServicesList,
       subTotal: subTotalAmount,
       gst: gstAmount,
@@ -203,22 +217,18 @@ export function PricingTable() {
     };
 
     const endpoint = import.meta.env.VITE_SHEETS_ENDPOINT || "https://script.google.com/macros/s/AKfycbzL5u2QfR4t-P3tW9J7J9jR7J9/exec";
-    
-    try {
-      // Fire and forget to make the UI feel instant.
-      fetch(endpoint, {
-        method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify(payload),
-      }).catch(() => {});
-      
-      setCheckoutStep('pay');
-    } catch (err) {
-      setCheckoutError("Network error. Please check your connection.");
-    } finally {
-      setIsSubmitting(false);
-    }
+
+    // Fire and forget to make the UI feel instant.
+    fetch(endpoint, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(payload),
+    }).catch(() => {});
+
+    clearCart();
+    setIsSubmitting(false);
+    setCheckoutStep('pay');
   };
 
   const selectedServices = services.filter((s) => selectedIds.has(s.id));
@@ -356,8 +366,14 @@ export function PricingTable() {
                     <p className="text-[10px] font-medium opacity-70 mt-0.5">+ 18% GST will be added at checkout</p>
                   </div>
                 </div>
-                <button 
-                  onClick={() => setIsCheckoutMode(true)}
+                <button
+                  onClick={() => {
+                    if (!getCustomerSession()) {
+                      goToAccount();
+                      return;
+                    }
+                    setIsCheckoutMode(true);
+                  }}
                   className="bg-primary text-primary-foreground hover:brightness-110 px-8 py-3 rounded-full font-bold shadow-lg transition-transform hover:scale-105 active:scale-95 whitespace-nowrap"
                 >
                   Proceed to Checkout →
@@ -422,34 +438,49 @@ export function PricingTable() {
                 <div className="relative z-10">
                 {checkoutStep !== 'pay' ? (
                   <div>
-                    <h4 className="text-2xl font-bold text-foreground mb-2">Your Details</h4>
-                    <p className="text-sm text-muted-foreground mb-8">Please provide your details below to reveal the secure payment QR code.</p>
-                    <form onSubmit={handleRegistration} className="space-y-5">
-                      <div>
-                        <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Full Name</label>
-                        <input name="name" required className="mt-1.5 w-full rounded-xl border border-border/50 bg-background/50 px-4 py-3 text-base outline-none focus:border-primary/60 focus:ring-2 focus:ring-primary/20 transition-all shadow-sm" placeholder="John Doe" />
-                      </div>
-                      <div>
-                        <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Email Address</label>
-                        <input type="email" name="email" required className="mt-1.5 w-full rounded-xl border border-border/50 bg-background/50 px-4 py-3 text-base outline-none focus:border-primary/60 focus:ring-2 focus:ring-primary/20 transition-all shadow-sm" placeholder="john@example.com" />
-                      </div>
-                      <div>
-                        <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Mobile Number</label>
-                        <input type="tel" name="phone" required className="mt-1.5 w-full rounded-xl border border-border/50 bg-background/50 px-4 py-3 text-base outline-none focus:border-primary/60 focus:ring-2 focus:ring-primary/20 transition-all shadow-sm" placeholder="+91 XXXXX XXXXX" />
-                      </div>
-                      
-                      {checkoutError && (
-                        <div className="text-xs text-destructive bg-destructive/10 p-2 rounded-md border border-destructive/20">{checkoutError}</div>
-                      )}
-                      
-                      <button 
-                        type="submit" 
-                        disabled={isSubmitting}
-                        className="mt-6 w-full rounded-xl bg-primary py-4 text-base font-bold text-primary-foreground shadow-xl shadow-primary/20 hover:brightness-110 disabled:opacity-50 transition-all transform hover:-translate-y-0.5 active:translate-y-0"
-                      >
-                        {isSubmitting ? 'Processing...' : 'Complete Order & Pay'}
-                      </button>
-                    </form>
+                    <h4 className="text-2xl font-bold text-foreground mb-2">Confirm &amp; Pay</h4>
+                    <p className="text-sm text-muted-foreground mb-8">Review your details below, then reveal the secure payment QR code.</p>
+                    {(() => {
+                      const session = getCustomerSession();
+                      if (!session) {
+                        // Shouldn't normally happen (checkout only opens with an active session),
+                        // but handle a mid-checkout expiry gracefully instead of crashing.
+                        return (
+                          <div className="space-y-5">
+                            <p className="text-sm text-muted-foreground">Your session has expired. Please sign in again to continue.</p>
+                            <button
+                              onClick={goToAccount}
+                              className="w-full rounded-xl bg-primary py-4 text-base font-bold text-primary-foreground shadow-xl shadow-primary/20 hover:brightness-110 transition-all"
+                            >
+                              Sign In
+                            </button>
+                          </div>
+                        );
+                      }
+                      return (
+                        <div className="space-y-5">
+                          <div className="rounded-xl border border-border/50 bg-background/50 p-4">
+                            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Name</p>
+                            <p className="mt-0.5 text-base font-semibold text-foreground">{session.name}</p>
+                          </div>
+                          <div className="rounded-xl border border-border/50 bg-background/50 p-4">
+                            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Email</p>
+                            <p className="mt-0.5 text-base font-semibold text-foreground">{session.email}</p>
+                          </div>
+                          <div className="rounded-xl border border-border/50 bg-background/50 p-4">
+                            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Mobile</p>
+                            <p className="mt-0.5 text-base font-semibold text-foreground">{session.mobile}</p>
+                          </div>
+                          <button
+                            onClick={handleCheckout}
+                            disabled={isSubmitting}
+                            className="mt-6 w-full rounded-xl bg-primary py-4 text-base font-bold text-primary-foreground shadow-xl shadow-primary/20 hover:brightness-110 disabled:opacity-50 transition-all transform hover:-translate-y-0.5 active:translate-y-0"
+                          >
+                            {isSubmitting ? 'Processing...' : 'Complete Order & Pay'}
+                          </button>
+                        </div>
+                      );
+                    })()}
                   </div>
                 ) : (
                   <div className="bg-background/80 backdrop-blur border border-primary/20 p-8 rounded-2xl shadow-sm text-center animate-in zoom-in-95 fade-in duration-500">
