@@ -513,7 +513,7 @@ function ServicesView() {
   const { data: initialData, isLoading } = useQuery({
     queryKey: ["admin-pricing"],
     queryFn: getPricing,
-    initialData: getCachedPricingSync,
+    placeholderData: getCachedPricingSync,
     staleTime: 60_000,
   });
 

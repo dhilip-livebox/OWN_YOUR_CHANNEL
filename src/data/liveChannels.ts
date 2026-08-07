@@ -11,11 +11,7 @@ export const liveChannels: LiveChannel[] = [
     streamUrl: "https://onsitestream.livebox.co.in/TODAYNEWSRAJASTHANhls/live.m3u8",
     homeUrl: "https://todaynewsrajasthan.ivb7.info/",
   },
-  {
-    name: "T News Rajasthan",
-    streamUrl: "https://stream6.livebox.co.in/tnewsrajasthanhls/live.m3u8",
-    homeUrl: "https://tnewsrajasthan.ivb7.info/",
-  },
+
   {
     name: "E News TV",
     streamUrl: "https://account10.livebox.co.in/enewstvnoonechannelomsairamhls/live.m3u8",
@@ -30,5 +26,10 @@ export const liveChannels: LiveChannel[] = [
     name: "Universe TV",
     streamUrl: "https://account10.livebox.co.in/UNIVERSETVhls/live.m3u8",
     homeUrl: "https://universetv.ivb7.info/live.html",
+  },
+  {
+    name: "MS TV",
+    streamUrl: "https://account10.livebox.co.in/mstvhls/live.m3u8",
+    homeUrl: "https://mstvlive.ivb7.info/live.html",
   },
 ];

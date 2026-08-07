@@ -60,9 +60,9 @@
   --popover: oklch(0.195 0.021 260);
   --popover-foreground: oklch(0.965 0.005 250);
 
-  /* Broadcast gold #F2B33D */
-  --primary: oklch(0.79 0.155 82);
-  --primary-foreground: oklch(0.16 0.02 260);
+  /* Broadcast purple #B531C2-ish */
+  --primary: oklch(0.65 0.25 310);
+  --primary-foreground: oklch(0.98 0.01 250);
 
   --secondary: oklch(0.235 0.021 260);
   --secondary-foreground: oklch(0.965 0.005 250);
@@ -108,7 +108,7 @@
   }
 }
 
-@utility glow-gold {
+@utility glow-purple {
   background: radial-gradient(
     60% 60% at 50% 50%,
     color-mix(in oklch, var(--primary) 35%, transparent) 0%,
