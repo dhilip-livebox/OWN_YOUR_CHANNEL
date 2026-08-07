@@ -459,8 +459,16 @@ function doGet(e) {
     
     if (action === 'pricing') {
       var sheet = spreadsheet.getSheetByName('AI-TV-Channel-Pricing');
+      var needsDefaults = false;
+      
       if (!sheet) {
         sheet = spreadsheet.insertSheet('AI-TV-Channel-Pricing');
+        needsDefaults = true;
+      } else if (sheet.getLastRow() <= 1) {
+        needsDefaults = true;
+      }
+
+      if (needsDefaults) {
         var defaultServices = [
           [1, "Website Hosting Server", "Server to host built-in Websites, Apps, Streaming & Storage", 299, "", 0],
           [2, "Streaming Server", "Streaming Server to stream to 2 platforms", 499, "", 0],
@@ -486,10 +494,15 @@ function doGet(e) {
           [22, "Radio Channel Single", "", 999, "", 0],
           [23, "Radio Station Multiple", "", 4999, "", 0]
         ];
+        
+        if (sheet.getLastRow() > 0) {
+          sheet.getDataRange().clearContent();
+        }
         sheet.appendRow(["id", "name", "description", "monthlyPrice", "monthlyOfferPrice", "annualDiscountPercent"]);
         sheet.getRange(1, 1, 1, 6).setFontWeight('bold');
         sheet.getRange(2, 1, defaultServices.length, 6).setValues(defaultServices);
       }
+      
       if (sheet.getMaxColumns() < 6) {
         sheet.insertColumnsAfter(sheet.getMaxColumns(), 6 - sheet.getMaxColumns());
       }
