@@ -3,17 +3,7 @@ import { z } from "zod";
 import { Check, Download, FileText, GraduationCap, Video, Wrench } from "lucide-react";
 import { motion } from "framer-motion";
 
-const languages = [
-  { value: "English", label: "English", active: true },
-  { value: "Tamil", label: "Tamil", active: true },
-  { value: "Hindi", label: "Hindi", active: true },
-  { value: "Telugu", label: "Telugu", active: true },
-  { value: "Kannada", label: "Kannada", active: true },
-  { value: "Malayalam", label: "Malayalam", active: true },
-  { value: "Marathi", label: "Marathi", active: true },
-  { value: "Bengali", label: "Bengali", active: true },
-  { value: "Other", label: "Other", active: true },
-];
+
 
 const interestOptions = ["TV Channel", "OTT", "Streaming", "Broadcast Server", "Others"];
 
@@ -24,7 +14,6 @@ const schema = z.object({
   country: z.string().trim().min(1, "Country is required").max(80),
   state: z.string().trim().min(1, "State is required").max(80),
   city: z.string().trim().min(1, "City is required").max(80),
-  language: z.string().min(1),
   interest: z.array(z.string()).min(1, "Pick at least one interest"),
   interestOther: z.string().max(200).optional().default(""),
 });
@@ -174,20 +163,7 @@ export function Registration({ onRegistered }: { onRegistered: () => void }) {
                     className="sm:col-span-2"
                     error={errors.city}
                   />
-                  <div className="sm:col-span-2">
-                    <Label>Preferred language</Label>
-                    <select
-                      name="language"
-                      defaultValue="English"
-                      className="mt-1.5 w-full rounded-md border border-border bg-background px-3 py-2.5 text-sm text-foreground outline-none transition focus:border-primary/60 focus:ring-2 focus:ring-primary/20"
-                    >
-                      {languages.map((l) => (
-                        <option key={l.value} value={l.value} disabled={!l.active}>
-                          {l.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+
                   <div className="sm:col-span-2">
                     <Label>What are you interested in?</Label>
                     <div className="mt-2 flex flex-wrap gap-2">

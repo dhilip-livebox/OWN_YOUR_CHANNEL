@@ -47,6 +47,7 @@ export function SiteHeader() {
           <a href="/#platforms" className="transition hover:text-foreground">Platforms</a>
           <a href="/#journey" className="transition hover:text-foreground">Journey</a>
           <a href="/#channels" className="transition hover:text-foreground">Channels</a>
+          <a href="/#contact" className="transition hover:text-foreground">Contact</a>
         </nav>
 
         <div className="flex shrink-0 items-center gap-3">
