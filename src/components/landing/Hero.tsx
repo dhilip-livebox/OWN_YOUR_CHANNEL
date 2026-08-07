@@ -1,6 +1,6 @@
 import { motion, useReducedMotion } from "framer-motion";
 import { useEffect, useState } from "react";
-import { Camera, CloudDownload, Globe, Mic2, MonitorPlay, PlayCircle, RadioTower } from "lucide-react";
+import { Camera, CloudDownload, Globe, Mic2, MonitorPlay, RadioTower } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 
 const headlines = [
@@ -59,16 +59,19 @@ export function Hero() {
   }, [reduce]);
 
   return (
-    <section id="hero" className="relative overflow-hidden">
+    <section 
+      id="hero" 
+      className="relative flex min-h-[100svh] lg:min-h-[800px] items-center overflow-hidden"
+    >
       {/* radial glows */}
       <div aria-hidden className="pointer-events-none absolute inset-0">
-        <div className="absolute left-1/2 top-[10%] h-[520px] w-[520px] -translate-x-1/2 glow-gold opacity-70" />
-        <div className="absolute right-[-10%] top-[40%] h-[400px] w-[400px] glow-blue opacity-60" />
+        <div className="absolute left-[20%] top-[10%] h-[520px] w-[520px] -translate-x-1/2 glow-purple opacity-40 mix-blend-screen" />
+        <div className="absolute right-[-10%] top-[40%] h-[400px] w-[400px] glow-blue opacity-40 mix-blend-screen" />
       </div>
 
-      <div className="relative mx-auto grid max-w-[1600px] grid-cols-1 items-center gap-12 px-6 py-20 md:py-28 lg:grid-cols-[1.15fr_1fr]">
-        <div>
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-border bg-surface/60 px-3 py-1.5 text-xs font-medium text-muted-foreground">
+      <div className="relative mx-auto w-full grid max-w-[1600px] grid-cols-1 items-center gap-12 px-6 py-20 md:py-28 lg:grid-cols-2">
+        <div className="relative z-10 lg:pr-10">
+          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-border bg-surface/80 px-3 py-1.5 text-xs font-medium text-muted-foreground backdrop-blur-sm">
             <span className="relative flex h-2 w-2">
               <span className="absolute inline-flex h-full w-full rounded-full bg-live animate-live-pulse" />
               <span className="relative inline-flex h-2 w-2 rounded-full bg-live" />
@@ -76,19 +79,19 @@ export function Hero() {
             LIVE across Facebook, YouTube, OTT &amp; Cable — simultaneously
           </div>
 
-          <h1 className="font-display text-[clamp(2.5rem,6vw,5.25rem)] font-bold leading-[1.02] tracking-tight text-foreground">
+          <h1 className="font-display text-[clamp(2.5rem,6vw,5.25rem)] font-bold leading-[1.02] tracking-tight text-white drop-shadow-lg min-h-[4em] lg:min-h-[3.2em] max-w-3xl">
             <motion.span
               key={i}
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, ease: "easeOut" }}
-              className="block bg-gradient-to-br from-foreground via-foreground to-primary/70 bg-clip-text text-transparent"
+              className="block bg-gradient-to-br from-white via-white to-primary/80 bg-clip-text text-transparent"
             >
               {headlines[i]}
             </motion.span>
           </h1>
 
-          <p className="mt-6 max-w-xl text-lg text-muted-foreground">
+          <p className="mt-6 max-w-xl text-lg text-white/80 drop-shadow-md">
             Broadcast simultaneously to social media, OTT, IPTV and local cable —
             fully automated by AI, on servers you control. No high-speed internet.
             No PC left running.
@@ -104,7 +107,7 @@ export function Hero() {
             </Link>
             <a
               href="/#register"
-              className="inline-flex items-center gap-2 rounded-md border border-border bg-transparent px-6 py-3 text-sm font-semibold text-foreground transition hover:border-accent/50 hover:text-accent"
+              className="inline-flex items-center gap-2 rounded-md border border-white/20 bg-black/20 backdrop-blur-md px-6 py-3 text-sm font-semibold text-white transition hover:border-primary/50 hover:bg-black/40"
             >
               Get Free Consultation
             </a>
@@ -112,57 +115,29 @@ export function Hero() {
 
           <div className="mt-10 grid grid-cols-2 gap-x-6 gap-y-6 sm:grid-cols-3">
             {heroFeatures.map(({ icon: Icon, label, description, color }) => (
-              <div key={label} className="flex flex-col gap-2">
+              <div key={label} className="flex flex-col gap-2 drop-shadow-md">
                 <Icon className={`h-6 w-6 ${color}`} />
                 <p className={`text-xs font-bold uppercase tracking-wide ${color}`}>{label}</p>
-                <p className="text-xs leading-relaxed text-muted-foreground">{description}</p>
+                <p className="text-xs leading-relaxed text-white/70">{description}</p>
               </div>
             ))}
           </div>
         </div>
 
-        <BroadcastTower reduce={!!reduce} />
+        {/* Right column graphic using the image */}
+        <div className="absolute right-0 top-0 h-full w-full lg:w-[60%] z-0 pointer-events-none overflow-hidden opacity-30 lg:opacity-100">
+          {/* Fade mask to blend the left edge of the image smoothly into the background */}
+          <div className="absolute inset-0 bg-gradient-to-r from-background via-background/60 to-transparent z-10" />
+          {/* Fade mask for the top/bottom edges just in case */}
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background z-10" />
+          
+          <img 
+            src="/image.png" 
+            alt="Broadcast Station" 
+            className="w-full h-full object-cover object-right"
+          />
+        </div>
       </div>
     </section>
-  );
-}
-
-function BroadcastTower({ reduce }: { reduce: boolean }) {
-  return (
-    <div className="relative mx-auto aspect-square w-full max-w-[500px]">
-      {/* rings */}
-      <div aria-hidden className="absolute inset-0">
-        {[0, 1, 2, 3].map((n) => (
-          <span
-            key={n}
-            className="absolute left-1/2 top-1/2 h-24 w-24 -translate-x-1/2 -translate-y-1/2 rounded-full border border-primary/40"
-            style={{
-              animation: reduce ? undefined : `pulse-ring 3s ease-out ${n * 0.75}s infinite`,
-            }}
-          />
-        ))}
-      </div>
-      {/* tower svg */}
-      <svg viewBox="0 0 200 200" className="relative h-full w-full">
-        <defs>
-          <linearGradient id="tower-g" x1="0" x2="0" y1="0" y2="1">
-            <stop offset="0%" stopColor="oklch(0.79 0.155 82)" />
-            <stop offset="100%" stopColor="oklch(0.66 0.17 253)" />
-          </linearGradient>
-        </defs>
-        <g stroke="url(#tower-g)" strokeWidth="2" fill="none" strokeLinecap="round">
-          <circle cx="100" cy="70" r="6" fill="oklch(0.79 0.155 82)" />
-          <path d="M100 76 L82 170" />
-          <path d="M100 76 L118 170" />
-          <path d="M88 110 L112 110" />
-          <path d="M85 130 L115 130" />
-          <path d="M82 150 L118 150" />
-          <path d="M75 172 L125 172" strokeWidth="3" />
-          {/* signal arcs */}
-          <path d="M70 60 Q100 40 130 60" opacity="0.7" />
-          <path d="M55 55 Q100 20 145 55" opacity="0.4" />
-        </g>
-      </svg>
-    </div>
   );
 }
