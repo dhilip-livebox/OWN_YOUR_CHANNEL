@@ -7,9 +7,9 @@ export const liveChannels: LiveChannel[] = [
     homeUrl: "https://palpalindianewstv.ivb7.info/",
   },
   {
-    name: "City News",
-    streamUrl: "https://account9.livebox.co.in/citynewshls/live.m3u8",
-    homeUrl: "https://citynews.ivb7.info/",
+    name: "Today News Rajasthan",
+    streamUrl: "https://onsitestream.livebox.co.in/TODAYNEWSRAJASTHANhls/live.m3u8",
+    homeUrl: "https://todaynewsrajasthan.ivb7.info/",
   },
   {
     name: "T News Rajasthan",
@@ -27,8 +27,8 @@ export const liveChannels: LiveChannel[] = [
     homeUrl: "https://mnsnews.ivb7.info/",
   },
   {
-    name: "Naxatra News",
-    streamUrl: "https://account18.livebox.co.in/QuantumBroadcasthls/live.m3u8",
-    homeUrl: "https://naxatranews.ivb7.info/",
+    name: "Universe TV",
+    streamUrl: "https://account10.livebox.co.in/UNIVERSETVhls/live.m3u8",
+    homeUrl: "https://universetv.ivb7.info/live.html",
   },
 ];

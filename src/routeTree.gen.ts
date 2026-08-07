@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AccountRouteImport } from './routes/account'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as PurchaseRouteImport } from './routes/purchase'
+import { Route as RequestsRouteImport } from './routes/requests'
 import { Route as ResourcesRouteImport } from './routes/resources'
 
 const IndexRoute = IndexRouteImport.update({
@@ -35,6 +36,11 @@ const PurchaseRoute = PurchaseRouteImport.update({
   path: '/purchase',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RequestsRoute = RequestsRouteImport.update({
+  id: '/requests',
+  path: '/requests',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ResourcesRoute = ResourcesRouteImport.update({
   id: '/resources',
   path: '/resources',
@@ -46,6 +52,7 @@ export interface FileRoutesByFullPath {
   '/account': typeof AccountRoute
   '/profile': typeof ProfileRoute
   '/purchase': typeof PurchaseRoute
+  '/requests': typeof RequestsRoute
   '/resources': typeof ResourcesRoute
 }
 export interface FileRoutesByTo {
@@ -53,6 +60,7 @@ export interface FileRoutesByTo {
   '/account': typeof AccountRoute
   '/profile': typeof ProfileRoute
   '/purchase': typeof PurchaseRoute
+  '/requests': typeof RequestsRoute
   '/resources': typeof ResourcesRoute
 }
 export interface FileRoutesById {
@@ -61,14 +69,23 @@ export interface FileRoutesById {
   '/account': typeof AccountRoute
   '/profile': typeof ProfileRoute
   '/purchase': typeof PurchaseRoute
+  '/requests': typeof RequestsRoute
   '/resources': typeof ResourcesRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/account' | '/profile' | '/purchase' | '/resources'
+  fullPaths:
+    '/' | '/account' | '/profile' | '/purchase' | '/requests' | '/resources'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/account' | '/profile' | '/purchase' | '/resources'
-  id: '__root__' | '/' | '/account' | '/profile' | '/purchase' | '/resources'
+  to: '/' | '/account' | '/profile' | '/purchase' | '/requests' | '/resources'
+  id:
+    | '__root__'
+    | '/'
+    | '/account'
+    | '/profile'
+    | '/purchase'
+    | '/requests'
+    | '/resources'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -76,6 +93,7 @@ export interface RootRouteChildren {
   AccountRoute: typeof AccountRoute
   ProfileRoute: typeof ProfileRoute
   PurchaseRoute: typeof PurchaseRoute
+  RequestsRoute: typeof RequestsRoute
   ResourcesRoute: typeof ResourcesRoute
 }
 
@@ -109,6 +127,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PurchaseRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/requests': {
+      id: '/requests'
+      path: '/requests'
+      fullPath: '/requests'
+      preLoaderRoute: typeof RequestsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/resources': {
       id: '/resources'
       path: '/resources'
@@ -124,6 +149,7 @@ const rootRouteChildren: RootRouteChildren = {
   AccountRoute: AccountRoute,
   ProfileRoute: ProfileRoute,
   PurchaseRoute: PurchaseRoute,
+  RequestsRoute: RequestsRoute,
   ResourcesRoute: ResourcesRoute,
 }
 export const routeTree = rootRouteImport

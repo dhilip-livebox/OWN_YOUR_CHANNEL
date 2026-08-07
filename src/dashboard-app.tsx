@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Bar,
   BarChart,
@@ -23,6 +23,7 @@ import {
   PricingService,
   ConsultationLead,
   OrderRecord,
+  updateOrderStatus,
 } from "@/lib/admin.functions";
 import { computeAnnualPricing, percentFromAnnualPrice } from "@/lib/pricing";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -387,12 +388,22 @@ function ConsultationsView() {
 }
 
 function OrdersView() {
+  const queryClient = useQueryClient();
   const { data, isLoading, error } = useQuery({
     queryKey: ["orders"],
     queryFn: getOrders,
     refetchInterval: 30_000,
   });
   const [selected, setSelected] = useState<OrderRecord | null>(null);
+  const [updating, setUpdating] = useState(false);
+
+  const handleStatusUpdate = async (order: OrderRecord, newStatus: string) => {
+    setUpdating(true);
+    await updateOrderStatus(order.timestamp, order.email, newStatus);
+    await queryClient.invalidateQueries({ queryKey: ["orders"] });
+    setSelected(prev => prev ? { ...prev, status: newStatus } : null);
+    setUpdating(false);
+  };
 
   if (isLoading) return <div className="text-muted-foreground">Loading orders…</div>;
   if (error || !data) {
@@ -421,11 +432,20 @@ function OrdersView() {
               <span className="whitespace-nowrap text-xs text-muted-foreground">{formatShortDate(order.timestamp)}</span>
             </div>
             <p className="mt-2 font-display text-xl font-bold text-foreground">₹{order.amount.toLocaleString()}</p>
-            {order.billingCycle && (
-              <span className="mt-2 inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium capitalize text-primary">
-                <CreditCard className="h-3 w-3" /> {order.billingCycle}
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              {order.billingCycle && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium capitalize text-primary">
+                  <CreditCard className="h-3 w-3" /> {order.billingCycle}
+                </span>
+              )}
+              <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${
+                order.status === "Completed" ? "bg-green-500/10 text-green-500" :
+                order.status === "In Progress" ? "bg-amber-500/10 text-amber-500" :
+                "bg-blue-500/10 text-blue-500"
+              }`}>
+                {order.status}
               </span>
-            )}
+            </div>
             <p className="mt-3 line-clamp-2 flex items-start gap-1.5 text-xs text-muted-foreground">
               <Package className="mt-0.5 h-3 w-3 shrink-0" /> {order.services || "—"}
             </p>
@@ -458,6 +478,26 @@ function OrdersView() {
                   <div className="mt-1 flex justify-between border-t border-border/60 pt-1 font-semibold">
                     <span>Total</span>
                     <span>₹{selected.amount.toLocaleString()}</span>
+                  </div>
+                </div>
+                
+                <div className="pt-4 border-t border-border/60">
+                  <h5 className="mb-2 text-sm font-semibold">Update Status</h5>
+                  <div className="flex gap-2">
+                    {["Requested", "In Progress", "Completed"].map((s) => (
+                      <button
+                        key={s}
+                        disabled={updating || selected.status === s}
+                        onClick={() => handleStatusUpdate(selected, s)}
+                        className={`rounded-md px-3 py-1.5 text-xs font-semibold transition ${
+                          selected.status === s 
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground"
+                        } disabled:opacity-50`}
+                      >
+                        {s}
+                      </button>
+                    ))}
                   </div>
                 </div>
               </div>

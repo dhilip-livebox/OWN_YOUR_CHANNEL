@@ -60,11 +60,16 @@ function doPost(e) {
       }
       if (sheet.getLastRow() === 0) {
         sheet.appendRow([
-          'Timestamp', 'Name', 'Email', 'Phone', 'Selected Services', 'Subtotal', 'GST', 'Total Amount', 'Billing Cycle'
+          'Timestamp', 'Name', 'Email', 'Phone', 'Selected Services', 'Subtotal', 'GST', 'Total Amount', 'Billing Cycle', 'Status'
         ]);
-        sheet.getRange(1, 1, 1, 9).setFontWeight('bold');
-      } else if (sheet.getRange(1, 9).getValue() !== 'Billing Cycle') {
-        sheet.getRange(1, 9).setValue('Billing Cycle').setFontWeight('bold');
+        sheet.getRange(1, 1, 1, 10).setFontWeight('bold');
+      } else {
+        if (sheet.getRange(1, 9).getValue() !== 'Billing Cycle') {
+          sheet.getRange(1, 9).setValue('Billing Cycle').setFontWeight('bold');
+        }
+        if (sheet.getRange(1, 10).getValue() !== 'Status') {
+          sheet.getRange(1, 10).setValue('Status').setFontWeight('bold');
+        }
       }
       sheet.appendRow([
         new Date(),
@@ -75,7 +80,8 @@ function doPost(e) {
         body.subTotal || 0,
         body.gst || 0,
         body.amount || 0,
-        body.billingCycle || ''
+        body.billingCycle || '',
+        'Requested'
       ]);
       return json({ ok: true });
     } else if (body.type === 'consultation' || !body.type) {
@@ -115,6 +121,42 @@ function doPost(e) {
       return handleUpdateProfile(spreadsheet, body);
     } else if (body.type === 'change_password') {
       return handleChangePassword(spreadsheet, body);
+    } else if (body.type === 'update_order_status') {
+      var sheet = spreadsheet.getSheetByName(SHEET_NAME_ORDERS);
+      if (!sheet) return json({ ok: false, error: 'No orders sheet' });
+      var last = sheet.getLastRow();
+      if (last < 2) return json({ ok: false, error: 'No orders found' });
+      var rows = sheet.getRange(2, 1, last - 1, 10).getValues();
+      var targetTimestampStr = String(body.timestamp);
+      for (var i = 0; i < rows.length; i++) {
+        var r = rows[i];
+        var rTs = r[0] instanceof Date ? r[0].toISOString() : String(r[0]);
+        if (rTs === targetTimestampStr && r[2] === body.email) {
+           sheet.getRange(i + 2, 10).setValue(body.status);
+           return json({ ok: true });
+        }
+      }
+      return json({ ok: false, error: 'Order not found' });
+    } else if (body.type === 'get_my_orders') {
+      var sheet = spreadsheet.getSheetByName(SHEET_NAME_ORDERS);
+      if (!sheet) return json({ orders: [] });
+      var lastRow = sheet.getLastRow();
+      var rows = lastRow > 1 ? sheet.getRange(2, 1, lastRow - 1, 10).getValues() : [];
+      var myOrders = rows.filter(function(r) { return String(r[2]).toLowerCase() === String(body.email).toLowerCase(); }).map(function(r) {
+        return {
+          timestamp: r[0] instanceof Date ? r[0].toISOString() : String(r[0]),
+          name: r[1],
+          email: r[2],
+          phone: r[3],
+          services: r[4],
+          subTotal: Number(r[5]) || 0,
+          gst: Number(r[6]) || 0,
+          amount: Number(r[7]) || 0,
+          billingCycle: r[8] || '',
+          status: r[9] || 'Requested'
+        };
+      }).reverse();
+      return json({ orders: myOrders });
     } else {
       return json({ ok: false, error: 'Unknown request type' });
     }
@@ -367,6 +409,22 @@ function handleUpdateProfile(spreadsheet, body) {
   }
 
   sheet.getRange(match.rowNumber, 2, 1, 3).setValues([[name, newEmail, newMobile]]);
+
+  if (newEmail !== currentEmail) {
+    var orderSheet = spreadsheet.getSheetByName(SHEET_NAME_ORDERS);
+    if (orderSheet) {
+      var lastOrderRow = orderSheet.getLastRow();
+      if (lastOrderRow > 1) {
+        var orderRows = orderSheet.getRange(2, 1, lastOrderRow - 1, 3).getValues();
+        for (var j = 0; j < orderRows.length; j++) {
+          if (normalizeEmail(orderRows[j][2]) === currentEmail) {
+            orderSheet.getRange(j + 2, 3).setValue(newEmail);
+          }
+        }
+      }
+    }
+  }
+
   return json({ ok: true, customer: { name: name, email: newEmail, mobile: newMobile } });
 }
 
@@ -473,7 +531,7 @@ function doGet(e) {
     if (action === 'orders') {
       var sheet = spreadsheet.getSheetByName(SHEET_NAME_ORDERS);
       var lastRow = sheet ? sheet.getLastRow() : 0;
-      var rows = lastRow > 1 ? sheet.getRange(2, 1, lastRow - 1, 9).getValues() : [];
+      var rows = lastRow > 1 ? sheet.getRange(2, 1, lastRow - 1, 10).getValues() : [];
       var orders = rows.map(function(r) {
         return {
           timestamp: r[0] instanceof Date ? r[0].toISOString() : String(r[0]),
@@ -484,7 +542,8 @@ function doGet(e) {
           subTotal: Number(r[5]) || 0,
           gst: Number(r[6]) || 0,
           amount: Number(r[7]) || 0,
-          billingCycle: r[8] || ''
+          billingCycle: r[8] || '',
+          status: r[9] || 'Requested'
         };
       }).reverse();
       return json({ orders: orders });

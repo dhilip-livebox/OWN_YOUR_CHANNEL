@@ -1,4 +1,5 @@
 export type CustomerSession = { name: string; email: string; mobile: string; expiry: number };
+import type { OrderRecord } from "./admin.functions";
 
 const SESSION_KEY = "customer_session";
 export const SESSION_EVENT = "customer-session-changed";
@@ -93,4 +94,11 @@ export async function changePassword(data: { currentPassword: string; newPasswor
   const session = getCustomerSession();
   if (!session) return { ok: false, error: "Not signed in." };
   return postJson<{ ok: boolean; error?: string }>({ type: "change_password", email: session.email, ...data });
+}
+
+export async function getMyOrders(): Promise<OrderRecord[]> {
+  const session = getCustomerSession();
+  if (!session) return [];
+  const res = await postJson<{ orders: OrderRecord[] }>({ type: "get_my_orders", email: session.email });
+  return res.orders || [];
 }

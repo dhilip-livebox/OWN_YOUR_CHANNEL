@@ -77,6 +77,9 @@ export function SiteHeader() {
                 <DropdownMenuItem asChild>
                   <Link to="/profile">Profile</Link>
                 </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/requests">Request Status</Link>
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={customerLogout} className="text-destructive focus:text-destructive">
                   <LogOut className="h-4 w-4" /> Sign out

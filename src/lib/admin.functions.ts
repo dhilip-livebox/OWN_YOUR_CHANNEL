@@ -114,6 +114,7 @@ export type OrderRecord = {
   gst: number;
   amount: number;
   billingCycle: string;
+  status: string;
 };
 
 export const getOrders = async (): Promise<OrderRecord[]> => {
@@ -132,6 +133,23 @@ export const getOrders = async (): Promise<OrderRecord[]> => {
     console.error("getOrders failed", err);
     return [];
   }
+};
+
+export const updateOrderStatus = async (timestamp: string, email: string, status: string) => {
+  const auth = await adminStatus();
+  if (!auth.unlocked) throw new Error("Unauthorized");
+
+  const endpoint = import.meta.env.VITE_SHEETS_ENDPOINT || "https://script.google.com/macros/s/AKfycbzL5u2QfR4t-P3tW9J7J9jR7J9/exec";
+  if (!endpoint) throw new Error("No endpoint configured");
+
+  fetch(endpoint, {
+    method: "POST",
+    mode: "no-cors",
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify({ type: "update_order_status", timestamp, email, status }),
+  }).catch((err) => console.error("updateOrderStatus failed", err));
+
+  return { ok: true };
 };
 
 export type PricingService = {
