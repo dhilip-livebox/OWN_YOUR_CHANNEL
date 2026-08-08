@@ -60,15 +60,24 @@ function doPost(e) {
       }
       if (sheet.getLastRow() === 0) {
         sheet.appendRow([
-          'Timestamp', 'Name', 'Email', 'Phone', 'Selected Services', 'Subtotal', 'GST', 'Total Amount', 'Billing Cycle', 'Status'
+          'Timestamp', 'Name', 'Email', 'Phone', 'Selected Services', 'Subtotal', 'GST', 'Total Amount', 'Billing Cycle', 'Status', 'Transaction ID', 'Account Name'
         ]);
-        sheet.getRange(1, 1, 1, 10).setFontWeight('bold');
+        sheet.getRange(1, 1, 1, 12).setFontWeight('bold');
       } else {
+        if (sheet.getMaxColumns() < 12) {
+          sheet.insertColumnsAfter(sheet.getMaxColumns(), 12 - sheet.getMaxColumns());
+        }
         if (sheet.getRange(1, 9).getValue() !== 'Billing Cycle') {
           sheet.getRange(1, 9).setValue('Billing Cycle').setFontWeight('bold');
         }
         if (sheet.getRange(1, 10).getValue() !== 'Status') {
           sheet.getRange(1, 10).setValue('Status').setFontWeight('bold');
+        }
+        if (sheet.getRange(1, 11).getValue() !== 'Transaction ID') {
+          sheet.getRange(1, 11).setValue('Transaction ID').setFontWeight('bold');
+        }
+        if (sheet.getRange(1, 12).getValue() !== 'Account Name') {
+          sheet.getRange(1, 12).setValue('Account Name').setFontWeight('bold');
         }
       }
       sheet.appendRow([
@@ -81,7 +90,9 @@ function doPost(e) {
         body.gst || 0,
         body.amount || 0,
         body.billingCycle || '',
-        'Requested'
+        'Requested',
+        body.transactionId || '',
+        body.accountName || ''
       ]);
       return json({ ok: true });
     } else if (body.type === 'consultation' || !body.type) {
@@ -141,7 +152,7 @@ function doPost(e) {
       var sheet = spreadsheet.getSheetByName(SHEET_NAME_ORDERS);
       if (!sheet) return json({ orders: [] });
       var lastRow = sheet.getLastRow();
-      var rows = lastRow > 1 ? sheet.getRange(2, 1, lastRow - 1, 10).getValues() : [];
+      var rows = lastRow > 1 ? sheet.getRange(2, 1, lastRow - 1, 12).getValues() : [];
       var myOrders = rows.filter(function(r) { return String(r[2]).toLowerCase() === String(body.email).toLowerCase(); }).map(function(r) {
         return {
           timestamp: r[0] instanceof Date ? r[0].toISOString() : String(r[0]),
@@ -153,7 +164,9 @@ function doPost(e) {
           gst: Number(r[6]) || 0,
           amount: Number(r[7]) || 0,
           billingCycle: r[8] || '',
-          status: r[9] || 'Requested'
+          status: r[9] || 'Requested',
+          transactionId: r[10] || '',
+          accountName: r[11] || ''
         };
       }).reverse();
       return json({ orders: myOrders });
@@ -544,7 +557,7 @@ function doGet(e) {
     if (action === 'orders') {
       var sheet = spreadsheet.getSheetByName(SHEET_NAME_ORDERS);
       var lastRow = sheet ? sheet.getLastRow() : 0;
-      var rows = lastRow > 1 ? sheet.getRange(2, 1, lastRow - 1, 10).getValues() : [];
+      var rows = lastRow > 1 ? sheet.getRange(2, 1, lastRow - 1, 12).getValues() : [];
       var orders = rows.map(function(r) {
         return {
           timestamp: r[0] instanceof Date ? r[0].toISOString() : String(r[0]),
@@ -556,7 +569,9 @@ function doGet(e) {
           gst: Number(r[6]) || 0,
           amount: Number(r[7]) || 0,
           billingCycle: r[8] || '',
-          status: r[9] || 'Requested'
+          status: r[9] || 'Requested',
+          transactionId: r[10] || '',
+          accountName: r[11] || ''
         };
       }).reverse();
       return json({ orders: orders });

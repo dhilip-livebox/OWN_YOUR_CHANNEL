@@ -165,8 +165,10 @@ export function PricingTable() {
   const services = servicesData && servicesData.length > 0 ? servicesData : defaultServices;
   const [selectedIds, setSelectedIds] = useState<Set<number>>(() => new Set(loadCart()?.selectedIds ?? []));
   const [cycle, setCycle] = useState<BillingCycle>(() => loadCart()?.cycle ?? "monthly");
-  const [checkoutStep, setCheckoutStep] = useState<'cart' | 'pay'>('cart');
+  const [checkoutStep, setCheckoutStep] = useState<'cart' | 'pay' | 'payment_details' | 'success'>('cart');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [paymentDetails, setPaymentDetails] = useState({ username: '', transactionId: '' });
+  const [isSubmittingPayment, setIsSubmittingPayment] = useState(false);
   // Returning from /account with a saved cart + a session should land back in the checkout
   // panel, not the plain services table — otherwise the redirect round-trip loses the user's place.
   const [isCheckoutMode, setIsCheckoutMode] = useState(() => {
@@ -201,25 +203,31 @@ export function PricingTable() {
       goToAccount();
       return;
     }
-    setIsSubmitting(true);
+    setCheckoutStep('pay');
+  };
 
+  const handlePaymentSubmit = async () => {
+    setIsSubmittingPayment(true);
+    const session = getCustomerSession();
+    
     const selectedServicesList = services.filter(s => selectedIds.has(s.id)).map(s => s.name).join(", ");
     const payload = {
       type: 'checkout',
-      name: session.name,
-      email: session.email,
-      phone: session.mobile,
+      name: session?.name || '',
+      email: session?.email || '',
+      phone: session?.mobile || '',
       services: selectedServicesList,
       subTotal: subTotalAmount,
       gst: gstAmount,
       amount: totalAmount,
-      billingCycle: cycle
+      billingCycle: cycle,
+      transactionId: paymentDetails.transactionId,
+      accountName: paymentDetails.username
     };
 
     const endpoint = import.meta.env.VITE_SHEETS_ENDPOINT || "https://script.google.com/macros/s/AKfycbzL5u2QfR4t-P3tW9J7J9jR7J9/exec";
 
-    // Fire and forget to make the UI feel instant.
-    fetch(endpoint, {
+    await fetch(endpoint, {
       method: "POST",
       mode: "no-cors",
       headers: { "Content-Type": "text/plain;charset=utf-8" },
@@ -227,8 +235,8 @@ export function PricingTable() {
     }).catch(() => {});
 
     clearCart();
-    setIsSubmitting(false);
-    setCheckoutStep('pay');
+    setIsSubmittingPayment(false);
+    setCheckoutStep('success');
   };
 
   const selectedServices = services.filter((s) => selectedIds.has(s.id));
@@ -436,7 +444,7 @@ export function PricingTable() {
                 <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
                 
                 <div className="relative z-10">
-                {checkoutStep !== 'pay' ? (
+                {checkoutStep === 'cart' && (
                   <div>
                     <h4 className="text-2xl font-bold text-foreground mb-2">Confirm &amp; Pay</h4>
                     <p className="text-sm text-muted-foreground mb-8">Review your details below, then reveal the secure payment QR code.</p>
@@ -473,16 +481,17 @@ export function PricingTable() {
                           </div>
                           <button
                             onClick={handleCheckout}
-                            disabled={isSubmitting}
-                            className="mt-6 w-full rounded-xl bg-primary py-4 text-base font-bold text-primary-foreground shadow-xl shadow-primary/20 hover:brightness-110 disabled:opacity-50 transition-all transform hover:-translate-y-0.5 active:translate-y-0"
+                            className="mt-6 w-full rounded-xl bg-primary py-4 text-base font-bold text-primary-foreground shadow-xl shadow-primary/20 hover:brightness-110 transition-all transform hover:-translate-y-0.5 active:translate-y-0"
                           >
-                            {isSubmitting ? 'Processing...' : 'Complete Order & Pay'}
+                            Proceed to Payment
                           </button>
                         </div>
                       );
                     })()}
                   </div>
-                ) : (
+                )}
+                
+                {checkoutStep === 'pay' && (
                   <div className="bg-background/80 backdrop-blur border border-primary/20 p-8 rounded-2xl shadow-sm text-center animate-in zoom-in-95 fade-in duration-500">
                     <div className="bg-primary/10 text-primary w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
                       <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
@@ -500,7 +509,60 @@ export function PricingTable() {
                       </div>
                     </div>
                     
-                    <p className="mt-8 text-sm text-muted-foreground bg-muted/50 p-4 rounded-xl">Your order details have been securely saved to our system. Our team will contact you shortly after successful payment.</p>
+                    <p className="mt-8 text-sm text-muted-foreground bg-muted/50 p-4 rounded-xl">Please complete the payment and click Done to provide your transaction details.</p>
+                    <button
+                      onClick={() => setCheckoutStep('payment_details')}
+                      className="mt-6 w-full rounded-xl bg-primary py-4 text-base font-bold text-primary-foreground shadow-xl shadow-primary/20 hover:brightness-110 transition-all transform hover:-translate-y-0.5 active:translate-y-0"
+                    >
+                      Done
+                    </button>
+                  </div>
+                )}
+
+                {checkoutStep === 'payment_details' && (
+                  <div className="bg-background/80 backdrop-blur border border-primary/20 p-8 rounded-2xl shadow-sm animate-in zoom-in-95 fade-in duration-500">
+                    <h4 className="text-2xl font-bold text-foreground mb-4">Payment Details</h4>
+                    <p className="text-sm text-muted-foreground mb-6">Please provide your account name and transaction ID for verification.</p>
+                    
+                    <div className="space-y-4 text-left">
+                      <div>
+                        <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Account Username</label>
+                        <input
+                          type="text"
+                          value={paymentDetails.username}
+                          onChange={e => setPaymentDetails({ ...paymentDetails, username: e.target.value })}
+                          className="mt-1 w-full rounded-xl border border-border/50 bg-background/50 p-4 text-base text-foreground outline-none focus:border-primary/50"
+                          placeholder="Name on your account"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Transaction ID / UTR</label>
+                        <input
+                          type="text"
+                          value={paymentDetails.transactionId}
+                          onChange={e => setPaymentDetails({ ...paymentDetails, transactionId: e.target.value })}
+                          className="mt-1 w-full rounded-xl border border-border/50 bg-background/50 p-4 text-base text-foreground outline-none focus:border-primary/50"
+                          placeholder="e.g. 123456789012"
+                        />
+                      </div>
+                      <button
+                        onClick={handlePaymentSubmit}
+                        disabled={isSubmittingPayment || !paymentDetails.transactionId}
+                        className="mt-6 w-full rounded-xl bg-primary py-4 text-base font-bold text-primary-foreground shadow-xl shadow-primary/20 hover:brightness-110 disabled:opacity-50 transition-all transform hover:-translate-y-0.5 active:translate-y-0"
+                      >
+                        {isSubmittingPayment ? 'Submitting...' : 'Submit Details'}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {checkoutStep === 'success' && (
+                  <div className="bg-background/80 backdrop-blur border border-primary/20 p-8 rounded-2xl shadow-sm text-center animate-in zoom-in-95 fade-in duration-500">
+                    <div className="bg-green-500/10 text-green-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                    </div>
+                    <h4 className="text-2xl font-bold text-foreground mb-2">Thank You!</h4>
+                    <p className="text-base text-muted-foreground">Your payment details have been submitted. Our team will verify and activate your services shortly.</p>
                   </div>
                 )}
                 </div>

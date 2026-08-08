@@ -115,6 +115,8 @@ export type OrderRecord = {
   amount: number;
   billingCycle: string;
   status: string;
+  transactionId?: string;
+  accountName?: string;
 };
 
 export const getOrders = async (): Promise<OrderRecord[]> => {

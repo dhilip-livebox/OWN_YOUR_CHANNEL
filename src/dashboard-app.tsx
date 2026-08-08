@@ -9,7 +9,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { LogOut, Lock, ExternalLink, Save, Plus, Trash2, Phone, Mail, MapPin, Tag, CreditCard, Calendar, Package } from "lucide-react";
+import { LogOut, Lock, ExternalLink, Save, Plus, Trash2, Phone, Mail, MapPin, Tag, CreditCard, Calendar, Package, Hash, User } from "lucide-react";
 import {
   adminLogin,
   adminLogout,
@@ -449,6 +449,11 @@ function OrdersView() {
             <p className="mt-3 line-clamp-2 flex items-start gap-1.5 text-xs text-muted-foreground">
               <Package className="mt-0.5 h-3 w-3 shrink-0" /> {order.services || "—"}
             </p>
+            {order.transactionId && (
+              <p className="mt-1 line-clamp-1 flex items-start gap-1.5 text-xs text-muted-foreground">
+                <Hash className="mt-0.5 h-3 w-3 shrink-0" /> {order.transactionId}
+              </p>
+            )}
           </button>
         ))}
       </div>
@@ -466,6 +471,8 @@ function OrdersView() {
                 <DetailRow icon={Mail} label="Email" value={selected.email} />
                 <DetailRow icon={Package} label="Services" value={selected.services} />
                 <DetailRow icon={CreditCard} label="Billing cycle" value={selected.billingCycle} />
+                <DetailRow icon={Hash} label="Transaction ID" value={selected.transactionId} />
+                <DetailRow icon={User} label="Account Name" value={selected.accountName} />
                 <div className="rounded-md border border-border/60 bg-muted/30 p-3 text-sm">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Subtotal</span>
