@@ -7,7 +7,7 @@ import { PlatformGrid } from "@/components/landing/PlatformGrid";
 import { JourneyTimeline } from "@/components/landing/JourneyTimeline";
 import { ChannelsSection } from "@/components/landing/ChannelsSection";
 import { Registration } from "@/components/landing/Registration";
-import { SocialProof } from "@/components/landing/SocialProof";
+import { Contact } from "@/components/landing/Contact";
 import { SiteFooter } from "@/components/landing/SiteFooter";
 
 export const Route = createFileRoute("/")({
@@ -39,7 +39,7 @@ function Landing() {
   useEffect(() => {
     try {
       setRegistered(localStorage.getItem("ailivetv:registered") === "1");
-    } catch {}
+    } catch { }
   }, []);
 
   return (
@@ -52,7 +52,7 @@ function Landing() {
         <JourneyTimeline />
         <ChannelsSection registered={registered} />
         <Registration onRegistered={() => setRegistered(true)} />
-        <SocialProof />
+        <Contact />
       </main>
       <SiteFooter />
     </div>
