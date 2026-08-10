@@ -53,6 +53,38 @@ function doPost(e) {
          sheet.getRange(2, 1, data.length, 6).setValues(data);
        }
        return json({ ok: true });
+    } else if (body.type === 'update_order_status') {
+      var sheet = spreadsheet.getSheetByName(SHEET_NAME_ORDERS);
+      if (sheet) {
+        var lastRow = sheet.getLastRow();
+        if (lastRow > 1) {
+          var data = sheet.getRange(2, 1, lastRow - 1, 10).getValues();
+          for (var i = 0; i < data.length; i++) {
+            var ts = data[i][0] instanceof Date ? data[i][0].toISOString() : String(data[i][0]);
+            if (ts === body.timestamp && String(data[i][2]).toLowerCase() === String(body.email).toLowerCase()) {
+              sheet.getRange(i + 2, 10).setValue(body.status);
+              break;
+            }
+          }
+        }
+      }
+      return json({ ok: true });
+    } else if (body.type === 'update_lead_status') {
+      var sheet = spreadsheet.getSheetByName(SHEET_NAME_LEADS);
+      if (sheet) {
+        var lastRow = sheet.getLastRow();
+        if (lastRow > 1) {
+          var data = sheet.getRange(2, 1, lastRow - 1, 10).getValues();
+          for (var i = 0; i < data.length; i++) {
+            var ts = data[i][0] instanceof Date ? data[i][0].toISOString() : String(data[i][0]);
+            if (ts === body.timestamp && String(data[i][3]).toLowerCase() === String(body.email).toLowerCase()) {
+              sheet.getRange(i + 2, 10).setValue(body.status);
+              break;
+            }
+          }
+        }
+      }
+      return json({ ok: true });
     } else if (body.type === 'checkout') {
       var sheet = spreadsheet.getSheetByName(SHEET_NAME_ORDERS);
       if (!sheet) {
@@ -102,9 +134,16 @@ function doPost(e) {
       }
       if (sheet.getLastRow() === 0) {
         sheet.appendRow([
-          'Timestamp', 'Name', 'Phone', 'Email', 'Country', 'State', 'City', 'Language', 'Interest'
+          'Timestamp', 'Name', 'Phone', 'Email', 'Country', 'State', 'City', 'Language', 'Interest', 'Status'
         ]);
-        sheet.getRange(1, 1, 1, 9).setFontWeight('bold');
+        sheet.getRange(1, 1, 1, 10).setFontWeight('bold');
+      } else {
+        if (sheet.getMaxColumns() < 10) {
+          sheet.insertColumnsAfter(sheet.getMaxColumns(), 10 - sheet.getMaxColumns());
+        }
+        if (sheet.getRange(1, 10).getValue() !== 'Status') {
+          sheet.getRange(1, 10).setValue('Status').setFontWeight('bold');
+        }
       }
       sheet.appendRow([
         new Date(),
@@ -116,6 +155,7 @@ function doPost(e) {
         body.city || '',
         body.language || '',
         body.interest || '',
+        'New'
       ]);
       return json({ ok: true });
     } else if (body.type === 'register') {
@@ -537,7 +577,7 @@ function doGet(e) {
     if (action === 'leads') {
       var sheet = spreadsheet.getSheetByName(SHEET_NAME_LEADS);
       var lastRow = sheet ? sheet.getLastRow() : 0;
-      var rows = lastRow > 1 ? sheet.getRange(2, 1, lastRow - 1, 9).getValues() : [];
+      var rows = lastRow > 1 ? sheet.getRange(2, 1, lastRow - 1, 10).getValues() : [];
       var leads = rows.map(function(r) {
         return {
           timestamp: r[0] instanceof Date ? r[0].toISOString() : String(r[0]),
@@ -548,7 +588,8 @@ function doGet(e) {
           state: r[5],
           city: r[6],
           language: r[7],
-          interest: r[8]
+          interest: r[8],
+          status: r[9] || 'New'
         };
       }).reverse();
       return json({ leads: leads });

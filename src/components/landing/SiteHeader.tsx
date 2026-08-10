@@ -45,6 +45,7 @@ export function SiteHeader() {
           </a>
           <a href="/#benefits" className="transition hover:text-foreground">Why</a>
           <a href="/#platforms" className="transition hover:text-foreground">Platforms</a>
+          <Link to="/build-server" className="transition font-semibold text-primary hover:text-primary/80">Build Server</Link>
           <a href="/#journey" className="transition hover:text-foreground">Journey</a>
           <a href="/#channels" className="transition hover:text-foreground">Channels</a>
           <a href="/#contact" className="transition hover:text-foreground">Contact</a>

@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AccountRouteImport } from './routes/account'
+import { Route as BuildServerRouteImport } from './routes/build-server'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as PurchaseRouteImport } from './routes/purchase'
 import { Route as RequestsRouteImport } from './routes/requests'
@@ -24,6 +25,11 @@ const IndexRoute = IndexRouteImport.update({
 const AccountRoute = AccountRouteImport.update({
   id: '/account',
   path: '/account',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BuildServerRoute = BuildServerRouteImport.update({
+  id: '/build-server',
+  path: '/build-server',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProfileRoute = ProfileRouteImport.update({
@@ -50,6 +56,7 @@ const ResourcesRoute = ResourcesRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/account': typeof AccountRoute
+  '/build-server': typeof BuildServerRoute
   '/profile': typeof ProfileRoute
   '/purchase': typeof PurchaseRoute
   '/requests': typeof RequestsRoute
@@ -58,6 +65,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/account': typeof AccountRoute
+  '/build-server': typeof BuildServerRoute
   '/profile': typeof ProfileRoute
   '/purchase': typeof PurchaseRoute
   '/requests': typeof RequestsRoute
@@ -67,6 +75,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/account': typeof AccountRoute
+  '/build-server': typeof BuildServerRoute
   '/profile': typeof ProfileRoute
   '/purchase': typeof PurchaseRoute
   '/requests': typeof RequestsRoute
@@ -75,13 +84,27 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/account' | '/profile' | '/purchase' | '/requests' | '/resources'
+    | '/'
+    | '/account'
+    | '/build-server'
+    | '/profile'
+    | '/purchase'
+    | '/requests'
+    | '/resources'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/account' | '/profile' | '/purchase' | '/requests' | '/resources'
+  to:
+    | '/'
+    | '/account'
+    | '/build-server'
+    | '/profile'
+    | '/purchase'
+    | '/requests'
+    | '/resources'
   id:
     | '__root__'
     | '/'
     | '/account'
+    | '/build-server'
     | '/profile'
     | '/purchase'
     | '/requests'
@@ -91,6 +114,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AccountRoute: typeof AccountRoute
+  BuildServerRoute: typeof BuildServerRoute
   ProfileRoute: typeof ProfileRoute
   PurchaseRoute: typeof PurchaseRoute
   RequestsRoute: typeof RequestsRoute
@@ -111,6 +135,13 @@ declare module '@tanstack/react-router' {
       path: '/account'
       fullPath: '/account'
       preLoaderRoute: typeof AccountRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/build-server': {
+      id: '/build-server'
+      path: '/build-server'
+      fullPath: '/build-server'
+      preLoaderRoute: typeof BuildServerRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/profile': {
@@ -147,6 +178,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AccountRoute: AccountRoute,
+  BuildServerRoute: BuildServerRoute,
   ProfileRoute: ProfileRoute,
   PurchaseRoute: PurchaseRoute,
   RequestsRoute: RequestsRoute,

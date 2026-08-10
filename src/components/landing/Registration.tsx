@@ -14,6 +14,7 @@ const schema = z.object({
   country: z.string().trim().min(1, "Country is required").max(80),
   state: z.string().trim().min(1, "State is required").max(80),
   city: z.string().trim().min(1, "City is required").max(80),
+  language: z.string().trim().min(1, "Language is required"),
   interest: z.array(z.string()).min(1, "Pick at least one interest"),
   interestOther: z.string().max(200).optional().default(""),
 });
@@ -118,14 +119,13 @@ export function Registration({ onRegistered }: { onRegistered: () => void }) {
           {/* Left value column */}
           <div>
             <span className="inline-block text-xs font-semibold uppercase tracking-[0.18em] text-primary">
-              Free · Instant access
+              Expert Guidance
             </span>
             <h2 className="mt-3 font-display text-3xl font-bold leading-tight tracking-tight text-foreground sm:text-4xl">
               Register to get free consulting.
             </h2>
             <p className="mt-3 text-muted-foreground">
-              One form. Everything you need to start broadcasting is unlocked the
-              moment you submit.
+              Fill out the form below and our team will get in touch with you to provide expert guidance on launching your channel.
             </p>
             <ul className="mt-6 space-y-3">
               {perks.map(({ icon: Icon, text }) => (
@@ -163,6 +163,28 @@ export function Registration({ onRegistered }: { onRegistered: () => void }) {
                     className="sm:col-span-2"
                     error={errors.city}
                   />
+
+                  <div className="sm:col-span-2">
+                    <Label>Preferred Language</Label>
+                    <select
+                      name="language"
+                      required
+                      defaultValue="English"
+                      className="mt-1.5 w-full rounded-md border border-border bg-background px-3 py-2.5 text-sm text-foreground outline-none transition focus:border-primary/60 focus:ring-2 focus:ring-primary/20"
+                    >
+                      <option value="English">English</option>
+                      <option value="Tamil">Tamil (தமிழ்)</option>
+                      <option value="Hindi">Hindi (हिंदी)</option>
+                      <option value="Kannada">Kannada (ಕನ್ನಡ)</option>
+                      <option value="Urdu">Urdu (اردو)</option>
+                      <option value="Telugu">Telugu (తెలుగు)</option>
+                      <option value="Bengali">Bengali (বাংলা)</option>
+                      <option value="Malayalam">Malayalam (മലയാളം)</option>
+                      <option value="Marathi">Marathi (मराठी)</option>
+                      <option value="Gujarati">Gujarati (ગુજરાતી)</option>
+                    </select>
+                    {errors.language && <p className="mt-1 text-xs text-destructive">{errors.language}</p>}
+                  </div>
 
                   <div className="sm:col-span-2">
                     <Label>What are you interested in?</Label>
@@ -261,17 +283,10 @@ function SuccessCard() {
       <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-live/15 text-live ring-1 ring-live/40">
         <Check className="h-7 w-7" />
       </div>
-      <h3 className="mt-5 font-display text-2xl font-bold text-foreground">You're in.</h3>
+      <h3 className="mt-5 font-display text-2xl font-bold text-foreground">Request Received!</h3>
       <p className="mt-2 text-muted-foreground">
-        Your free resources are unlocked. Head to the resources area to grab
-        software, guides, videos and training.
+        We will reach out to you soon, or our support team will contact you shortly to discuss your requirements.
       </p>
-      <a
-        href="/resources"
-        className="mt-6 inline-flex items-center gap-2 rounded-md bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground transition hover:brightness-110"
-      >
-        Open free resources →
-      </a>
     </div>
   );
 }

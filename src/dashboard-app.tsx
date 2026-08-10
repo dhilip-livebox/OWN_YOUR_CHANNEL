@@ -24,6 +24,7 @@ import {
   ConsultationLead,
   OrderRecord,
   updateOrderStatus,
+  updateLeadStatus,
 } from "@/lib/admin.functions";
 import { computeAnnualPricing, percentFromAnnualPrice } from "@/lib/pricing";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -174,22 +175,22 @@ function Dashboard() {
 }
 
 function StatsView() {
-  const fetchStats = getLeadStats;
-  const { data, isLoading, error } = useQuery({
+  const { data: leadData, isLoading: leadsLoading, error: leadsError } = useQuery({
     queryKey: ["lead-stats"],
-    queryFn: () => fetchStats(),
+    queryFn: getLeadStats,
     refetchInterval: 30_000,
   });
 
+  const { data: orders, isLoading: ordersLoading, error: ordersError } = useQuery({
+    queryKey: ["orders"],
+    queryFn: getOrders,
+    refetchInterval: 30_000,
+  });
 
-  useEffect(() => {
-    // no-op
-  }, []);
-
-  if (isLoading) {
+  if (leadsLoading || ordersLoading) {
     return <div className="text-muted-foreground">Loading stats…</div>;
   }
-  if (error || !data) {
+  if (leadsError || !leadData || ordersError) {
     return (
       <div className="card-surface p-6 text-sm text-destructive">
         Couldn't load stats. Check that <code>SHEETS_ENDPOINT</code> is set and
@@ -198,64 +199,159 @@ function StatsView() {
     );
   }
 
-  const cards = [
-    { label: "Total", value: data.total },
-    { label: "Today", value: data.today },
-    { label: "This week", value: data.week },
-    { label: "This month", value: data.month },
+  // Compute Order Stats
+  let revenueToday = 0;
+  let revenueWeek = 0;
+  let revenueMonth = 0;
+  let revenueTotal = 0;
+  let requestedCount = 0;
+  let inProgressCount = 0;
+  let completedCount = 0;
+
+  const now = new Date();
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const startOfWeek = new Date(startOfToday);
+  startOfWeek.setDate(startOfToday.getDate() - startOfToday.getDay()); // Sunday
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+  if (orders) {
+    orders.forEach(o => {
+      const ts = new Date(o.timestamp);
+      if (isNaN(ts.getTime())) return;
+      
+      const amount = o.amount || 0;
+      revenueTotal += amount;
+      if (ts >= startOfToday) revenueToday += amount;
+      if (ts >= startOfWeek) revenueWeek += amount;
+      if (ts >= startOfMonth) revenueMonth += amount;
+
+      if (o.status === "Requested") requestedCount++;
+      else if (o.status === "In Progress") inProgressCount++;
+      else if (o.status === "Completed") completedCount++;
+    });
+  }
+
+  const regCards = [
+    { label: "Total Registrations", value: leadData.total.toLocaleString() },
+    { label: "Today", value: leadData.today.toLocaleString() },
+    { label: "This week", value: leadData.week.toLocaleString() },
+    { label: "This month", value: leadData.month.toLocaleString() },
+  ];
+
+  const revCards = [
+    { label: "Total Revenue", value: `₹${revenueTotal.toLocaleString()}` },
+    { label: "Today", value: `₹${revenueToday.toLocaleString()}` },
+    { label: "This week", value: `₹${revenueWeek.toLocaleString()}` },
+    { label: "This month", value: `₹${revenueMonth.toLocaleString()}` },
+  ];
+
+  const statusCards = [
+    { label: "Requested Orders", value: requestedCount, color: "text-blue-500", bg: "bg-blue-500/10" },
+    { label: "In Progress Orders", value: inProgressCount, color: "text-amber-500", bg: "bg-amber-500/10" },
+    { label: "Completed Orders", value: completedCount, color: "text-green-500", bg: "bg-green-500/10" },
   ];
 
   return (
-    <>
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        {cards.map((c) => (
-          <div key={c.label} className="card-surface p-5">
-            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-              {c.label}
-            </p>
-            <p className="mt-2 font-display text-3xl font-bold text-foreground">
-              {c.value.toLocaleString()}
-            </p>
-          </div>
-        ))}
-      </div>
-
-      <div className="card-surface mt-6 p-6">
+    <div className="space-y-8">
+      
+      {/* Revenue Section */}
+      <section>
         <div className="mb-4 flex items-center justify-between">
-          <h3 className="font-display text-base font-semibold">Registrations · last 30 days</h3>
-          <span className="text-xs text-muted-foreground">Auto-refreshes every 30s</span>
+          <h3 className="font-display text-lg font-bold text-foreground">Purchase Revenue</h3>
         </div>
-        <div className="h-72">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data.daily} margin={{ top: 8, right: 8, left: -12, bottom: 0 }}>
-              <CartesianGrid stroke="oklch(0.28 0.022 260)" strokeDasharray="2 4" vertical={false} />
-              <XAxis
-                dataKey="date"
-                tick={{ fill: "oklch(0.7 0.018 258)", fontSize: 11 }}
-                tickFormatter={(d: string) => d.slice(5)}
-                tickLine={false}
-                axisLine={{ stroke: "oklch(0.28 0.022 260)" }}
-              />
-              <YAxis
-                tick={{ fill: "oklch(0.7 0.018 258)", fontSize: 11 }}
-                tickLine={false}
-                axisLine={{ stroke: "oklch(0.28 0.022 260)" }}
-                allowDecimals={false}
-              />
-              <Tooltip
-                cursor={{ fill: "oklch(0.28 0.022 260 / 0.4)" }}
-                contentStyle={{
-                  background: "oklch(0.195 0.021 260)",
-                  border: "1px solid oklch(0.28 0.022 260)",
-                  borderRadius: 8,
-                  color: "oklch(0.965 0.005 250)",
-                }}
-              />
-              <Bar dataKey="count" fill="oklch(0.79 0.155 82)" radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+          {revCards.map((c) => (
+            <div key={c.label} className="card-surface p-5 bg-primary/5 border border-primary/20">
+              <p className="text-xs font-semibold uppercase tracking-widest text-primary">
+                {c.label}
+              </p>
+              <p className="mt-2 font-display text-3xl font-bold text-foreground">
+                {c.value}
+              </p>
+            </div>
+          ))}
         </div>
-      </div>
+      </section>
+
+      {/* Order Status Section */}
+      <section>
+        <div className="mb-4 flex items-center justify-between">
+          <h3 className="font-display text-lg font-bold text-foreground">Order Status</h3>
+        </div>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          {statusCards.map((c) => (
+            <div key={c.label} className="card-surface p-5 flex items-center justify-between">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                  {c.label}
+                </p>
+                <p className={`mt-2 font-display text-3xl font-bold ${c.color}`}>
+                  {c.value.toLocaleString()}
+                </p>
+              </div>
+              <div className={`h-12 w-12 rounded-full flex items-center justify-center ${c.bg}`}>
+                <Package className={`h-6 w-6 ${c.color}`} />
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Registrations Section */}
+      <section>
+        <div className="mb-4 flex items-center justify-between">
+          <h3 className="font-display text-lg font-bold text-foreground">Registration Stats</h3>
+        </div>
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+          {regCards.map((c) => (
+            <div key={c.label} className="card-surface p-5">
+              <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                {c.label}
+              </p>
+              <p className="mt-2 font-display text-3xl font-bold text-foreground">
+                {c.value}
+              </p>
+            </div>
+          ))}
+        </div>
+
+        <div className="card-surface mt-6 p-6">
+          <div className="mb-4 flex items-center justify-between">
+            <h3 className="font-display text-base font-semibold">Registrations · last 30 days</h3>
+            <span className="text-xs text-muted-foreground">Auto-refreshes every 30s</span>
+          </div>
+          <div className="h-72">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={leadData.daily} margin={{ top: 8, right: 8, left: -12, bottom: 0 }}>
+                <CartesianGrid stroke="oklch(0.28 0.022 260)" strokeDasharray="2 4" vertical={false} />
+                <XAxis
+                  dataKey="date"
+                  tick={{ fill: "oklch(0.7 0.018 258)", fontSize: 11 }}
+                  tickFormatter={(d: string) => d.slice(5)}
+                  tickLine={false}
+                  axisLine={{ stroke: "oklch(0.28 0.022 260)" }}
+                />
+                <YAxis
+                  tick={{ fill: "oklch(0.7 0.018 258)", fontSize: 11 }}
+                  tickLine={false}
+                  axisLine={{ stroke: "oklch(0.28 0.022 260)" }}
+                  allowDecimals={false}
+                />
+                <Tooltip
+                  cursor={{ fill: "oklch(0.28 0.022 260 / 0.4)" }}
+                  contentStyle={{
+                    background: "oklch(0.195 0.021 260)",
+                    border: "1px solid oklch(0.28 0.022 260)",
+                    borderRadius: 8,
+                    color: "oklch(0.965 0.005 250)",
+                  }}
+                />
+                <Bar dataKey="count" fill="oklch(0.79 0.155 82)" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      </section>
 
       <div className="card-surface mt-6 flex items-start gap-4 p-5">
         <ExternalLink className="mt-0.5 h-5 w-5 shrink-0 text-accent" />
@@ -267,7 +363,7 @@ function StatsView() {
           </p>
         </div>
       </div>
-    </>
+    </div>
   );
 }
 
@@ -305,12 +401,23 @@ function DetailRow({
 }
 
 function ConsultationsView() {
+  const queryClient = useQueryClient();
   const { data, isLoading, error } = useQuery({
     queryKey: ["consultations"],
     queryFn: getConsultations,
     refetchInterval: 30_000,
   });
   const [selected, setSelected] = useState<ConsultationLead | null>(null);
+  const [updating, setUpdating] = useState(false);
+  const [filterStatus, setFilterStatus] = useState<string>("All");
+
+  const handleStatusUpdate = async (lead: ConsultationLead, newStatus: string) => {
+    setUpdating(true);
+    await updateLeadStatus(lead.timestamp, lead.email, newStatus);
+    await queryClient.invalidateQueries({ queryKey: ["consultations"] });
+    setSelected(prev => prev ? { ...prev, status: newStatus } : null);
+    setUpdating(false);
+  };
 
   if (isLoading) return <div className="text-muted-foreground">Loading consultation requests…</div>;
   if (error || !data) {
@@ -325,40 +432,81 @@ function ConsultationsView() {
     return <div className="card-surface p-6 text-sm text-muted-foreground">No free consultation requests yet.</div>;
   }
 
+  const filteredData = data.filter(lead => filterStatus === "All" || lead.status === filterStatus);
+
   return (
     <>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {data.map((lead, i) => (
+      <div className="mb-6 flex flex-wrap gap-2">
+        {["All", "New", "Contacted", "Follow Up", "Converted", "Not Interested"].map(status => (
+          <button
+            key={status}
+            onClick={() => setFilterStatus(status)}
+            className={`rounded-full px-4 py-1.5 text-sm font-semibold transition ${
+              filterStatus === status 
+                ? "bg-primary text-primary-foreground"
+                : "bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            {status}
+          </button>
+        ))}
+      </div>
+
+      {filteredData.length === 0 ? (
+        <div className="card-surface p-6 text-sm text-muted-foreground">No consultation requests found for this status.</div>
+      ) : (
+        <div className="flex flex-col gap-3">
+          {filteredData.map((lead, i) => (
           <button
             key={i}
             onClick={() => setSelected(lead)}
-            className="card-surface card-surface-hover p-5 text-left"
+            className="card-surface card-surface-hover flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 text-left"
           >
-            <div className="flex items-start justify-between gap-2">
-              <h4 className="font-display text-base font-semibold text-foreground">{lead.name || "Unnamed"}</h4>
-              <span className="whitespace-nowrap text-xs text-muted-foreground">{formatShortDate(lead.timestamp)}</span>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-3">
+                <h4 className="font-display text-base font-semibold text-foreground truncate">{lead.name || "Unnamed"}</h4>
+                <div className="flex shrink-0 items-center gap-1.5">
+                  <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider ${
+                    lead.status === "Converted" ? "bg-green-500/10 text-green-500" :
+                    lead.status === "Contacted" || lead.status === "Follow Up" ? "bg-blue-500/10 text-blue-500" :
+                    lead.status === "Not Interested" ? "bg-destructive/10 text-destructive" :
+                    "bg-amber-500/10 text-amber-500"
+                  }`}>
+                    {lead.status}
+                  </span>
+                  {lead.language && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-primary/5 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider text-primary/70">
+                      {lead.language}
+                    </span>
+                  )}
+                  {lead.interest && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider text-primary">
+                      <Tag className="h-3 w-3" /> {lead.interest}
+                    </span>
+                  )}
+                </div>
+              </div>
+              <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
+                {lead.phone && (
+                  <p className="flex items-center gap-1.5 truncate">
+                    <Phone className="h-3.5 w-3.5 shrink-0" /> {lead.phone}
+                  </p>
+                )}
+                {(lead.city || lead.country) && (
+                  <p className="flex items-center gap-1.5 truncate">
+                    <MapPin className="h-3.5 w-3.5 shrink-0" />
+                    {[lead.city, lead.state, lead.country].filter(Boolean).join(", ")}
+                  </p>
+                )}
+              </div>
             </div>
-            {lead.interest && (
-              <span className="mt-2 inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
-                <Tag className="h-3 w-3" /> {lead.interest}
-              </span>
-            )}
-            <div className="mt-3 space-y-1 text-xs text-muted-foreground">
-              {(lead.city || lead.country) && (
-                <p className="flex items-center gap-1.5">
-                  <MapPin className="h-3 w-3 shrink-0" />
-                  {[lead.city, lead.state, lead.country].filter(Boolean).join(", ")}
-                </p>
-              )}
-              {lead.phone && (
-                <p className="flex items-center gap-1.5">
-                  <Phone className="h-3 w-3 shrink-0" /> {lead.phone}
-                </p>
-              )}
+            <div className="flex flex-col sm:items-end shrink-0">
+               <span className="text-xs text-muted-foreground">{formatShortDate(lead.timestamp)}</span>
             </div>
           </button>
         ))}
       </div>
+      )}
 
       <Dialog open={!!selected} onOpenChange={(open) => !open && setSelected(null)}>
         <DialogContent>
@@ -378,6 +526,26 @@ function ConsultationsView() {
                 />
                 <DetailRow icon={Tag} label="Language" value={selected.language} />
                 <DetailRow icon={Tag} label="Interest" value={selected.interest} />
+                
+                <div className="pt-4 border-t border-border/60">
+                  <h5 className="mb-2 text-sm font-semibold">Update Status</h5>
+                  <div className="flex flex-wrap gap-2">
+                    {["New", "Contacted", "Follow Up", "Converted", "Not Interested"].map((s) => (
+                      <button
+                        key={s}
+                        disabled={updating || selected.status === s}
+                        onClick={() => handleStatusUpdate(selected, s)}
+                        className={`rounded-md px-3 py-1.5 text-xs font-semibold transition ${
+                          selected.status === s 
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground"
+                        } disabled:opacity-50`}
+                      >
+                        {s}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
             </>
           )}
@@ -396,6 +564,7 @@ function OrdersView() {
   });
   const [selected, setSelected] = useState<OrderRecord | null>(null);
   const [updating, setUpdating] = useState(false);
+  const [filterStatus, setFilterStatus] = useState<string>("All");
 
   const handleStatusUpdate = async (order: OrderRecord, newStatus: string) => {
     setUpdating(true);
@@ -418,45 +587,72 @@ function OrdersView() {
     return <div className="card-surface p-6 text-sm text-muted-foreground">No orders yet.</div>;
   }
 
+  const filteredData = data.filter(order => filterStatus === "All" || order.status === filterStatus);
+
   return (
     <>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {data.map((order, i) => (
+      <div className="mb-6 flex flex-wrap gap-2">
+        {["All", "Requested", "In Progress", "Completed"].map(status => (
           <button
-            key={i}
-            onClick={() => setSelected(order)}
-            className="card-surface card-surface-hover p-5 text-left"
+            key={status}
+            onClick={() => setFilterStatus(status)}
+            className={`rounded-full px-4 py-1.5 text-sm font-semibold transition ${
+              filterStatus === status 
+                ? "bg-primary text-primary-foreground"
+                : "bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground"
+            }`}
           >
-            <div className="flex items-start justify-between gap-2">
-              <h4 className="font-display text-base font-semibold text-foreground">{order.name || "Unnamed"}</h4>
-              <span className="whitespace-nowrap text-xs text-muted-foreground">{formatShortDate(order.timestamp)}</span>
-            </div>
-            <p className="mt-2 font-display text-xl font-bold text-foreground">₹{order.amount.toLocaleString()}</p>
-            <div className="mt-2 flex flex-wrap items-center gap-2">
-              {order.billingCycle && (
-                <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium capitalize text-primary">
-                  <CreditCard className="h-3 w-3" /> {order.billingCycle}
-                </span>
-              )}
-              <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${
-                order.status === "Completed" ? "bg-green-500/10 text-green-500" :
-                order.status === "In Progress" ? "bg-amber-500/10 text-amber-500" :
-                "bg-blue-500/10 text-blue-500"
-              }`}>
-                {order.status}
-              </span>
-            </div>
-            <p className="mt-3 line-clamp-2 flex items-start gap-1.5 text-xs text-muted-foreground">
-              <Package className="mt-0.5 h-3 w-3 shrink-0" /> {order.services || "—"}
-            </p>
-            {order.transactionId && (
-              <p className="mt-1 line-clamp-1 flex items-start gap-1.5 text-xs text-muted-foreground">
-                <Hash className="mt-0.5 h-3 w-3 shrink-0" /> {order.transactionId}
-              </p>
-            )}
+            {status}
           </button>
         ))}
       </div>
+
+      {filteredData.length === 0 ? (
+        <div className="card-surface p-6 text-sm text-muted-foreground">No orders found for this status.</div>
+      ) : (
+        <div className="flex flex-col gap-3">
+          {filteredData.map((order, i) => (
+            <button
+              key={i}
+              onClick={() => setSelected(order)}
+              className="card-surface card-surface-hover flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 text-left"
+            >
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-3">
+                  <h4 className="font-display text-base font-semibold text-foreground truncate">{order.name || "Unnamed"}</h4>
+                  <span className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider ${
+                    order.status === "Completed" ? "bg-green-500/10 text-green-500" :
+                    order.status === "In Progress" ? "bg-amber-500/10 text-amber-500" :
+                    "bg-blue-500/10 text-blue-500"
+                  }`}>
+                    {order.status}
+                  </span>
+                </div>
+                <p className="mt-1.5 truncate text-sm text-muted-foreground">
+                  <Package className="mr-1 inline-block h-3.5 w-3.5" /> {order.services || "—"}
+                </p>
+                {order.transactionId && (
+                  <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                    <Hash className="mr-1 inline-block h-3 w-3" /> Tx: {order.transactionId}
+                  </p>
+                )}
+              </div>
+              <div className="flex flex-col sm:items-end shrink-0">
+                <p className="font-display text-lg font-bold text-foreground">₹{order.amount.toLocaleString()}</p>
+                <div className="mt-1 flex items-center gap-2">
+                  {order.billingCycle && (
+                    <span className="inline-flex items-center gap-1 rounded text-xs font-medium capitalize text-muted-foreground">
+                      <CreditCard className="h-3 w-3" /> {order.billingCycle}
+                    </span>
+                  )}
+                  <span className="text-xs text-muted-foreground/50">•</span>
+                  <span className="text-xs text-muted-foreground">{formatShortDate(order.timestamp)}</span>
+                </div>
+              </div>
+            </button>
+          ))}
+        </div>
+      )}
 
       <Dialog open={!!selected} onOpenChange={(open) => !open && setSelected(null)}>
         <DialogContent className="max-w-xl">
