@@ -127,6 +127,34 @@ function doPost(e) {
         body.accountName || ''
       ]);
       return json({ ok: true });
+    } else if (body.type === 'channel_configuration') {
+      var sheet = spreadsheet.getSheetByName('AI-TV-Channel-Configurations');
+      if (!sheet) {
+        sheet = spreadsheet.insertSheet('AI-TV-Channel-Configurations');
+      }
+      if (sheet.getLastRow() === 0) {
+        sheet.appendRow([
+          'Timestamp', 'Name', 'Company', 'Email', 'WhatsApp', 'Country', 'Intent', 'Viewers', 'Has Content', 'Status'
+        ]);
+        sheet.getRange(1, 1, 1, 10).setFontWeight('bold');
+      } else {
+        if (sheet.getMaxColumns() < 10) {
+          sheet.insertColumnsAfter(sheet.getMaxColumns(), 10 - sheet.getMaxColumns());
+        }
+      }
+      sheet.appendRow([
+        new Date(),
+        body.name || '',
+        body.company || '',
+        body.email || '',
+        body.whatsapp || '',
+        body.country || '',
+        body.intent || '',
+        body.viewers || '',
+        body.hasContent || '',
+        'New'
+      ]);
+      return json({ ok: true });
     } else if (body.type === 'consultation' || !body.type) {
       var sheet = spreadsheet.getSheetByName(SHEET_NAME_LEADS);
       if (!sheet) {

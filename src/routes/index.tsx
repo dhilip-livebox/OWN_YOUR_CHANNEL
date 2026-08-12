@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { SiteHeader } from "@/components/landing/SiteHeader";
 import { Hero } from "@/components/landing/Hero";
+import { ActionCards } from "@/components/landing/ActionCards";
 import { Benefits } from "@/components/landing/Benefits";
 import { PlatformGrid } from "@/components/landing/PlatformGrid";
 import { JourneyTimeline } from "@/components/landing/JourneyTimeline";
@@ -47,6 +48,7 @@ function Landing() {
       <SiteHeader />
       <main>
         <Hero />
+        <ActionCards />
         <Benefits />
         <PlatformGrid />
         <JourneyTimeline />

@@ -1,63 +1,8 @@
-import { motion, useReducedMotion } from "framer-motion";
-import { useEffect, useState } from "react";
-import { Camera, CloudDownload, Globe, Mic2, MonitorPlay, RadioTower } from "lucide-react";
+import { motion } from "framer-motion";
 import { Link } from "@tanstack/react-router";
-
-const headlines = [
-  "Build your own live tv chanell",
-  "own your chanel",
-  "broadcast in multiple platform  without sytem and Local internet",
-];
-
-const heroFeatures = [
-  {
-    icon: MonitorPlay,
-    label: "Professional Playout to Download",
-    description: "Get broadcast-ready playout with graphics, automation and scheduling.",
-    color: "text-cyan-400",
-  },
-  {
-    icon: CloudDownload,
-    label: "Your Own Streaming Platform",
-    description: "Launch your branded streaming platform under your own name.",
-    color: "text-violet-400",
-  },
-  {
-    icon: RadioTower,
-    label: "Stream Everywhere",
-    description: "Stream to multiple social media, OTT, websites, mobile platforms and local TVs.",
-    color: "text-amber-400",
-  },
-  {
-    icon: Camera,
-    label: "Produce Your Own Programs",
-    description: "Create stunning shows, live or recorded, with professional quality.",
-    color: "text-lime-400",
-  },
-  {
-    icon: Mic2,
-    label: "Podcasts & Panel Discussions",
-    description: "Host engaging podcasts and panel discussions that inform and inspire.",
-    color: "text-rose-400",
-  },
-  {
-    icon: Globe,
-    label: "Broadcast to the World",
-    description: "Reach global audiences and grow your brand without limits.",
-    color: "text-sky-400",
-  },
-];
+import { PhoneCall, Play, Server } from "lucide-react";
 
 export function Hero() {
-  const [i, setI] = useState(0);
-  const reduce = useReducedMotion();
-
-  useEffect(() => {
-    if (reduce) return;
-    const t = setInterval(() => setI((v) => (v + 1) % headlines.length), 3800);
-    return () => clearInterval(t);
-  }, [reduce]);
-
   return (
     <section 
       id="hero" 
@@ -79,56 +24,59 @@ export function Hero() {
             LIVE across Facebook, YouTube, OTT &amp; Cable — simultaneously
           </div>
 
-          <h1 className="font-display text-[clamp(2.5rem,6vw,5.25rem)] font-bold leading-[1.02] tracking-tight text-white drop-shadow-lg min-h-[4em] lg:min-h-[3.2em] max-w-3xl">
+          <h1 className="font-display text-[clamp(2.5rem,5vw,4.5rem)] font-bold leading-[1.05] tracking-tight text-white drop-shadow-lg max-w-3xl">
             <motion.span
-              key={i}
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, ease: "easeOut" }}
-              className="block bg-gradient-to-br from-white via-white to-primary/80 bg-clip-text text-transparent"
+              className="block bg-gradient-to-br from-white via-white to-primary/80 bg-clip-text text-transparent uppercase"
             >
-              {headlines[i]}
+              FROM YOUR FIRST TV CHANNEL TO YOUR OWN GLOBAL MEDIA NETWORK
             </motion.span>
           </h1>
 
-          <p className="mt-6 max-w-xl text-lg text-white/80 drop-shadow-md">
-            Broadcast simultaneously to social media, OTT, IPTV and local cable —
-            fully automated by AI, on servers you control. No high-speed internet.
-            No PC left running.
+          <p className="mt-6 max-w-xl text-xl font-medium text-white drop-shadow-md">
+            Start Small. Choose What You Need. Scale Without Limits.
           </p>
 
-          <div className="mt-8 flex flex-wrap gap-3">
+          <p className="mt-4 max-w-xl text-sm font-bold text-primary drop-shadow-md tracking-wide">
+            24×7 TV • Live Streaming • OTT • IPTV • Apps • Playout • Private Servers • Private CDN
+          </p>
+          
+          <p className="mt-2 max-w-xl text-sm font-medium text-white/80 drop-shadow-md">
+            For Individuals • Startups • Businesses • Institutions • Broadcasters • Enterprises
+          </p>
+
+          <div className="mt-10 flex flex-wrap gap-4">
             <Link
-              to="/purchase"
-              className="group inline-flex items-center gap-2 rounded-md bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-[0_0_0_1px_color-mix(in_oklch,var(--primary)_60%,transparent),0_10px_40px_-10px_color-mix(in_oklch,var(--primary)_60%,transparent)] transition hover:brightness-110 hover:scale-[1.02]"
+              to="/start-channel"
+              className="group inline-flex items-center gap-2 rounded-md bg-primary px-6 py-3.5 text-sm font-semibold text-primary-foreground shadow-[0_0_0_1px_color-mix(in_oklch,var(--primary)_60%,transparent),0_10px_40px_-10px_color-mix(in_oklch,var(--primary)_60%,transparent)] transition hover:brightness-110 hover:scale-[1.02]"
             >
-              View Pricing & Packages
-              <span className="transition group-hover:translate-x-0.5">→</span>
+              <Play className="h-4 w-4 fill-current" />
+              START YOUR CHANNEL
             </Link>
+            
+            <Link
+              to="/services"
+              className="inline-flex items-center gap-2 rounded-md border border-white/20 bg-black/20 backdrop-blur-md px-6 py-3.5 text-sm font-semibold text-white transition hover:border-primary/50 hover:bg-black/40"
+            >
+              <Server className="h-4 w-4" />
+              BUILD YOUR OWN SERVER
+            </Link>
+
             <a
               href="/#register"
-              className="inline-flex items-center gap-2 rounded-md border border-white/20 bg-black/20 backdrop-blur-md px-6 py-3 text-sm font-semibold text-white transition hover:border-primary/50 hover:bg-black/40"
+              className="inline-flex items-center gap-2 rounded-md border border-white/20 bg-black/20 backdrop-blur-md px-6 py-3.5 text-sm font-semibold text-white transition hover:border-primary/50 hover:bg-black/40"
             >
-              Get Free Consultation
+              <PhoneCall className="h-4 w-4" />
+              TALK TO OUR MEDIA CONSULTANT
             </a>
-          </div>
-
-          <div className="mt-10 grid grid-cols-2 gap-x-6 gap-y-6 sm:grid-cols-3">
-            {heroFeatures.map(({ icon: Icon, label, description, color }) => (
-              <div key={label} className="flex flex-col gap-2 drop-shadow-md">
-                <Icon className={`h-6 w-6 ${color}`} />
-                <p className={`text-xs font-bold uppercase tracking-wide ${color}`}>{label}</p>
-                <p className="text-xs leading-relaxed text-white/70">{description}</p>
-              </div>
-            ))}
           </div>
         </div>
 
         {/* Right column graphic using the image */}
         <div className="absolute right-0 top-0 h-full w-full lg:w-[60%] z-0 pointer-events-none overflow-hidden opacity-30 lg:opacity-100">
-          {/* Fade mask to blend the left edge of the image smoothly into the background */}
           <div className="absolute inset-0 bg-gradient-to-r from-background via-background/60 to-transparent z-10" />
-          {/* Fade mask for the top/bottom edges just in case */}
           <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background z-10" />
           
           <img 

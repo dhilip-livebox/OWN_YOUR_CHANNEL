@@ -14,8 +14,9 @@ import {
 } from "@/lib/customer-auth.functions";
 
 const accountSearchSchema = z.object({
-  redirect: z.enum(["/purchase", "/"]).optional(),
+  redirect: z.enum(["/services", "/purchase", "/"]).optional(),
   tab: z.enum(["login", "register"]).optional(),
+  category: z.string().optional(),
 });
 
 export const Route = createFileRoute("/account")({
@@ -24,12 +25,15 @@ export const Route = createFileRoute("/account")({
 });
 
 function AccountPage() {
-  const { redirect, tab } = Route.useSearch();
+  const { redirect, tab, category } = Route.useSearch();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<"login" | "register">(tab ?? "login");
 
   const onAuthSuccess = () => {
-    navigate({ to: redirect ?? "/" });
+    navigate({ 
+      to: redirect ?? "/",
+      search: category ? { category } : undefined
+    });
   };
 
   return (

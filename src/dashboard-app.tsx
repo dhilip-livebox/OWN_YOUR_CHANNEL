@@ -25,6 +25,12 @@ import {
   OrderRecord,
   updateOrderStatus,
   updateLeadStatus,
+  getServerComponents,
+  updateServerComponents,
+  getRequirementOptions,
+  updateRequirementOptions,
+  getCachedServerComponentsSync,
+  getCachedRequirementOptionsSync,
 } from "@/lib/admin.functions";
 import { computeAnnualPricing, percentFromAnnualPrice } from "@/lib/pricing";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -146,7 +152,8 @@ const TABS = [
   { key: "stats", label: "Registration Stats" },
   { key: "consultations", label: "Free Consultations" },
   { key: "orders", label: "Orders & Payments" },
-  { key: "pricing", label: "Services" },
+  { key: "pricing", label: "Legacy Services" },
+  { key: "server-builder", label: "Server Builder Config" },
 ] as const;
 
 function Dashboard() {
@@ -170,6 +177,7 @@ function Dashboard() {
       {activeTab === 'consultations' && <ConsultationsView />}
       {activeTab === 'orders' && <OrdersView />}
       {activeTab === 'pricing' && <ServicesView />}
+      {activeTab === 'server-builder' && <ServerBuilderConfigView />}
     </div>
   );
 }
@@ -1032,6 +1040,103 @@ function ServicesView() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+    </div>
+  );
+}
+
+function ServerBuilderConfigView() {
+  const { data: serverComps, isLoading: isCompsLoading } = useQuery({
+    queryKey: ["admin-server-comps"],
+    queryFn: getServerComponents,
+    placeholderData: getCachedServerComponentsSync,
+    staleTime: 60_000,
+  });
+
+  const { data: reqOpts, isLoading: isReqLoading } = useQuery({
+    queryKey: ["admin-req-opts"],
+    queryFn: getRequirementOptions,
+    placeholderData: getCachedRequirementOptionsSync,
+    staleTime: 60_000,
+  });
+
+  const [components, setComponents] = useState<any[]>([]);
+  const [requirements, setRequirements] = useState<any>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (serverComps) setComponents(serverComps);
+    if (reqOpts) setRequirements(reqOpts);
+  }, [serverComps, reqOpts]);
+
+  const handleSave = async () => {
+    setIsSaving(true);
+    setSaveStatus(null);
+    try {
+      if (components.length > 0) await updateServerComponents(components);
+      if (requirements) await updateRequirementOptions(requirements);
+      setSaveStatus("Saved!");
+    } catch (err) {
+      setSaveStatus("Failed to save: " + String(err));
+    } finally {
+      setIsSaving(false);
+      setTimeout(() => setSaveStatus(null), 3000);
+    }
+  };
+
+  if (isCompsLoading || isReqLoading) return <div className="text-muted-foreground">Loading configuration…</div>;
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h3 className="font-display text-lg font-semibold">Server Builder Config</h3>
+        <div className="flex items-center gap-4">
+          {saveStatus && <span className="text-sm text-primary">{saveStatus}</span>}
+          <button
+            onClick={handleSave}
+            disabled={isSaving}
+            className="flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition hover:brightness-110 disabled:opacity-50"
+          >
+            <Save className="h-4 w-4" /> {isSaving ? "Saving…" : "Save Changes"}
+          </button>
+        </div>
+      </div>
+
+      <div className="card-surface p-6">
+        <p className="text-sm text-muted-foreground mb-4">
+          This UI manages the <code>serverComponents</code> and <code>requirementOptions</code> arrays. 
+          For complex changes like adding or deleting options, please use the Google Sheet directly.
+        </p>
+        
+        <h4 className="font-semibold mt-6 mb-2">Server Components ({components?.length})</h4>
+        <div className="space-y-2 max-h-[300px] overflow-auto border border-border rounded-md p-2">
+          {components.map((c, i) => (
+            <div key={i} className="flex justify-between items-center text-sm p-2 bg-muted/20 rounded">
+              <div className="flex items-center gap-2">
+                 <span className="font-mono text-xs text-muted-foreground w-8">{c.id}</span>
+                 <strong>{c.name}</strong> 
+                 <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary">{c.category}</span>
+              </div>
+              <span>₹{c.price}</span>
+            </div>
+          ))}
+        </div>
+
+        <h4 className="font-semibold mt-6 mb-2">Requirements</h4>
+        {requirements && Object.keys(requirements).map((key) => (
+          <div key={key} className="mb-4">
+            <h5 className="text-sm font-medium capitalize text-muted-foreground mb-1">{key}</h5>
+            <div className="space-y-1">
+              {requirements[key].map((r: any, i: number) => (
+                <div key={i} className="flex justify-between items-center text-sm p-1.5 bg-muted/10 rounded">
+                  <span>{r.name}</span>
+                  <span>₹{r.price}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

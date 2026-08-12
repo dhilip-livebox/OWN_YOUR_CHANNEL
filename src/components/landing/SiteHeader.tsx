@@ -45,7 +45,6 @@ export function SiteHeader() {
           </a>
           <a href="/#benefits" className="transition hover:text-foreground">Why</a>
           <a href="/#platforms" className="transition hover:text-foreground">Platforms</a>
-          <Link to="/build-server" className="transition font-semibold text-primary hover:text-primary/80">Build Server</Link>
           <a href="/#journey" className="transition hover:text-foreground">Journey</a>
           <a href="/#channels" className="transition hover:text-foreground">Channels</a>
           <a href="/#contact" className="transition hover:text-foreground">Contact</a>
@@ -53,7 +52,7 @@ export function SiteHeader() {
 
         <div className="flex shrink-0 items-center gap-3">
           <Link
-            to="/purchase"
+            to="/services"
             className="inline-flex items-center rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sm transition hover:brightness-110"
             title="Services"
           >

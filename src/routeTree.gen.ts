@@ -11,11 +11,12 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AccountRouteImport } from './routes/account'
-import { Route as BuildServerRouteImport } from './routes/build-server'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as PurchaseRouteImport } from './routes/purchase'
 import { Route as RequestsRouteImport } from './routes/requests'
 import { Route as ResourcesRouteImport } from './routes/resources'
+import { Route as ServicesRouteImport } from './routes/services'
+import { Route as StartChannelRouteImport } from './routes/start-channel'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -25,11 +26,6 @@ const IndexRoute = IndexRouteImport.update({
 const AccountRoute = AccountRouteImport.update({
   id: '/account',
   path: '/account',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const BuildServerRoute = BuildServerRouteImport.update({
-  id: '/build-server',
-  path: '/build-server',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProfileRoute = ProfileRouteImport.update({
@@ -52,73 +48,90 @@ const ResourcesRoute = ResourcesRouteImport.update({
   path: '/resources',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ServicesRoute = ServicesRouteImport.update({
+  id: '/services',
+  path: '/services',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StartChannelRoute = StartChannelRouteImport.update({
+  id: '/start-channel',
+  path: '/start-channel',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/account': typeof AccountRoute
-  '/build-server': typeof BuildServerRoute
   '/profile': typeof ProfileRoute
   '/purchase': typeof PurchaseRoute
   '/requests': typeof RequestsRoute
   '/resources': typeof ResourcesRoute
+  '/services': typeof ServicesRoute
+  '/start-channel': typeof StartChannelRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/account': typeof AccountRoute
-  '/build-server': typeof BuildServerRoute
   '/profile': typeof ProfileRoute
   '/purchase': typeof PurchaseRoute
   '/requests': typeof RequestsRoute
   '/resources': typeof ResourcesRoute
+  '/services': typeof ServicesRoute
+  '/start-channel': typeof StartChannelRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/account': typeof AccountRoute
-  '/build-server': typeof BuildServerRoute
   '/profile': typeof ProfileRoute
   '/purchase': typeof PurchaseRoute
   '/requests': typeof RequestsRoute
   '/resources': typeof ResourcesRoute
+  '/services': typeof ServicesRoute
+  '/start-channel': typeof StartChannelRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/account'
-    | '/build-server'
     | '/profile'
     | '/purchase'
     | '/requests'
     | '/resources'
+    | '/services'
+    | '/start-channel'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/account'
-    | '/build-server'
     | '/profile'
     | '/purchase'
     | '/requests'
     | '/resources'
+    | '/services'
+    | '/start-channel'
   id:
     | '__root__'
     | '/'
     | '/account'
-    | '/build-server'
     | '/profile'
     | '/purchase'
     | '/requests'
     | '/resources'
+    | '/services'
+    | '/start-channel'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AccountRoute: typeof AccountRoute
-  BuildServerRoute: typeof BuildServerRoute
   ProfileRoute: typeof ProfileRoute
   PurchaseRoute: typeof PurchaseRoute
   RequestsRoute: typeof RequestsRoute
   ResourcesRoute: typeof ResourcesRoute
+  ServicesRoute: typeof ServicesRoute
+  StartChannelRoute: typeof StartChannelRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -135,13 +148,6 @@ declare module '@tanstack/react-router' {
       path: '/account'
       fullPath: '/account'
       preLoaderRoute: typeof AccountRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/build-server': {
-      id: '/build-server'
-      path: '/build-server'
-      fullPath: '/build-server'
-      preLoaderRoute: typeof BuildServerRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/profile': {
@@ -172,17 +178,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ResourcesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/services': {
+      id: '/services'
+      path: '/services'
+      fullPath: '/services'
+      preLoaderRoute: typeof ServicesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/start-channel': {
+      id: '/start-channel'
+      path: '/start-channel'
+      fullPath: '/start-channel'
+      preLoaderRoute: typeof StartChannelRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AccountRoute: AccountRoute,
-  BuildServerRoute: BuildServerRoute,
   ProfileRoute: ProfileRoute,
   PurchaseRoute: PurchaseRoute,
   RequestsRoute: RequestsRoute,
   ResourcesRoute: ResourcesRoute,
+  ServicesRoute: ServicesRoute,
+  StartChannelRoute: StartChannelRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

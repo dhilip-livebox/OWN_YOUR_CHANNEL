@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import { serverComponents, requirementOptions } from '../data/serverComponents';
+import { useQuery } from '@tanstack/react-query';
+import { getServerComponents, getRequirementOptions, getCachedServerComponentsSync, getCachedRequirementOptionsSync, ComponentItem, RequirementsConfig } from '../lib/admin.functions';
 
 interface ServerBuilderState {
   currentStep: number;
@@ -29,6 +30,8 @@ interface ServerBuilderContextType {
   calculateTotal: () => number;
   checkDependencies: (addonId: string) => MissingRequirement[];
   isServerComplete: boolean;
+  serverComponents: ComponentItem[];
+  requirementOptions: RequirementsConfig | null;
 }
 
 const defaultState: ServerBuilderState = {
@@ -44,8 +47,26 @@ const defaultState: ServerBuilderState = {
 
 const ServerBuilderContext = createContext<ServerBuilderContextType | undefined>(undefined);
 
-export const ServerBuilderProvider = ({ children }: { children: ReactNode }) => {
-  const [state, setState] = useState<ServerBuilderState>(defaultState);
+export const ServerBuilderProvider = ({ children, initialCategory }: { children: ReactNode, initialCategory?: string }) => {
+  const [state, setState] = useState<ServerBuilderState>({
+    ...defaultState,
+    mainCategory: initialCategory || null,
+    currentStep: initialCategory ? 2 : 1
+  });
+
+  const { data: serverComponents = [] } = useQuery({
+    queryKey: ['serverComponents'],
+    queryFn: getServerComponents,
+    placeholderData: getCachedServerComponentsSync,
+    staleTime: 60_000,
+  });
+
+  const { data: requirementOptions = null } = useQuery({
+    queryKey: ['requirementOptions'],
+    queryFn: getRequirementOptions,
+    placeholderData: getCachedRequirementOptionsSync,
+    staleTime: 60_000,
+  });
 
   const setStep = (step: number) => setState(s => ({ ...s, currentStep: step }));
   const setMainCategory = (category: string) => setState(s => ({ ...s, mainCategory: category }));
@@ -76,15 +97,15 @@ export const ServerBuilderProvider = ({ children }: { children: ReactNode }) => 
         if (server) total += server.price;
     }
     
-    if (state.bandwidthId) {
+    if (state.bandwidthId && requirementOptions?.bandwidth) {
         const bw = requirementOptions.bandwidth.find(b => b.id === state.bandwidthId);
         if (bw) total += bw.price;
     }
-    if (state.playerId) {
+    if (state.playerId && requirementOptions?.player) {
         const pl = requirementOptions.player.find(p => p.id === state.playerId);
         if (pl) total += pl.price;
     }
-    if (state.storageId) {
+    if (state.storageId && requirementOptions?.storage) {
         const st = requirementOptions.storage.find(s => s.id === state.storageId);
         if (st) total += st.price;
     }
@@ -122,12 +143,12 @@ export const ServerBuilderProvider = ({ children }: { children: ReactNode }) => 
     }
 
     // Check minimum capacities
-    addon.minimumCapacity?.forEach(cap => {
-        if (cap.type === 'Storage') {
+    addon.minimumCapacity?.forEach((cap: any) => {
+        if (cap.type === 'Storage' && requirementOptions?.storage) {
             const currentStorage = state.storageId ? requirementOptions.storage.find(s => s.id === state.storageId)?.value || 0 : 0;
             if (currentStorage < cap.value) {
                 // Find storage that matches or exceeds
-                const sufficient = requirementOptions.storage.find(s => s.value >= cap.value);
+                const sufficient = requirementOptions.storage.find(s => (s.value || 0) >= cap.value);
                 if (sufficient) {
                     missing.push({
                         type: 'Storage',
@@ -137,10 +158,10 @@ export const ServerBuilderProvider = ({ children }: { children: ReactNode }) => 
                 }
             }
         }
-        if (cap.type === 'Bandwidth') {
+        if (cap.type === 'Bandwidth' && requirementOptions?.bandwidth) {
             const currentBw = state.bandwidthId ? requirementOptions.bandwidth.find(b => b.id === state.bandwidthId)?.value || 0 : 0;
             if (currentBw < cap.value) {
-                const sufficient = requirementOptions.bandwidth.find(b => b.value >= cap.value);
+                const sufficient = requirementOptions.bandwidth.find(b => (b.value || 0) >= cap.value);
                 if (sufficient) {
                     missing.push({
                         type: 'Bandwidth',
@@ -168,7 +189,9 @@ export const ServerBuilderProvider = ({ children }: { children: ReactNode }) => 
       toggleAddon,
       calculateTotal,
       checkDependencies,
-      isServerComplete
+      isServerComplete,
+      serverComponents,
+      requirementOptions
     }}>
       {children}
     </ServerBuilderContext.Provider>
