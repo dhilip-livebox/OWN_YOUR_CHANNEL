@@ -7,12 +7,14 @@ import {
   changePassword,
   type CustomerSession,
 } from "@/lib/customer-auth.functions";
+import { useTranslation } from "react-i18next";
 
 export const Route = createFileRoute("/profile")({
   component: ProfilePage,
 });
 
 function ProfilePage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [session, setSession] = useState<CustomerSession | null>(null);
   const [checked, setChecked] = useState(false);
@@ -39,7 +41,7 @@ function ProfilePage() {
     <div className="min-h-screen bg-background px-4 py-12">
       <div className="mx-auto max-w-2xl">
         <Link to="/" className="mb-8 inline-flex items-center gap-2 text-sm font-semibold text-muted-foreground transition hover:text-foreground">
-          <ArrowLeft className="h-4 w-4" /> Back to Home
+          <ArrowLeft className="h-4 w-4" /> {t('profile.backToHome')}
         </Link>
 
         <div className="mb-8 flex items-center gap-3">
@@ -47,18 +49,18 @@ function ProfilePage() {
             <UserIcon className="h-6 w-6" />
           </div>
           <div>
-            <h1 className="font-display text-2xl font-bold tracking-tight text-foreground">My Profile</h1>
-            <p className="text-sm text-muted-foreground">Manage your account details and password.</p>
+            <h1 className="font-display text-2xl font-bold tracking-tight text-foreground">{t('profile.title')}</h1>
+            <p className="text-sm text-muted-foreground">{t('profile.subtitle')}</p>
           </div>
         </div>
 
         <div className="card-surface mb-6 p-8">
-          <h2 className="mb-6 text-lg font-semibold text-foreground">Account Details</h2>
+          <h2 className="mb-6 text-lg font-semibold text-foreground">{t('profile.accountDetails')}</h2>
           <ProfileForm session={session} />
         </div>
 
         <div className="card-surface p-8">
-          <h2 className="mb-6 text-lg font-semibold text-foreground">Change Password</h2>
+          <h2 className="mb-6 text-lg font-semibold text-foreground">{t('profile.changePassword')}</h2>
           <PasswordForm />
         </div>
       </div>
@@ -67,6 +69,7 @@ function ProfilePage() {
 }
 
 function ProfileForm({ session }: { session: CustomerSession }) {
+  const { t } = useTranslation();
   const [name, setName] = useState(session.name);
   const [email, setEmail] = useState(session.email);
   const [mobile, setMobile] = useState(session.mobile);
@@ -91,12 +94,12 @@ function ProfileForm({ session }: { session: CustomerSession }) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <FieldInput label="Full Name" type="text" value={name} onChange={setName} icon={UserIcon} required />
-      <FieldInput label="Email Address" type="email" value={email} onChange={setEmail} icon={Mail} required />
-      <FieldInput label="Mobile Number" type="tel" value={mobile} onChange={setMobile} icon={Phone} required />
+      <FieldInput label={t('profile.labels.name')} type="text" value={name} onChange={setName} icon={UserIcon} required />
+      <FieldInput label={t('profile.labels.email')} type="email" value={email} onChange={setEmail} icon={Mail} required />
+      <FieldInput label={t('profile.labels.mobile')} type="tel" value={mobile} onChange={setMobile} icon={Phone} required />
       {error && <ErrorText>{error}</ErrorText>}
       <div className="flex items-center gap-3">
-        <SubmitButton busy={busy}>Save Changes</SubmitButton>
+        <SubmitButton busy={busy}>{t('profile.btnSave')}</SubmitButton>
         {status && <span className="text-sm font-medium text-primary">{status}</span>}
       </div>
     </form>
@@ -104,6 +107,7 @@ function ProfileForm({ session }: { session: CustomerSession }) {
 }
 
 function PasswordForm() {
+  const { t } = useTranslation();
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -139,12 +143,12 @@ function PasswordForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <FieldInput label="Current Password" type="password" value={currentPassword} onChange={setCurrentPassword} icon={Lock} required />
-      <FieldInput label="New Password" type="password" value={newPassword} onChange={setNewPassword} icon={Lock} placeholder="At least 8 characters" required minLength={8} />
-      <FieldInput label="Confirm New Password" type="password" value={confirmPassword} onChange={setConfirmPassword} icon={Lock} required minLength={8} />
+      <FieldInput label={t('profile.labels.currentPass')} type="password" value={currentPassword} onChange={setCurrentPassword} icon={Lock} required />
+      <FieldInput label={t('profile.labels.newPass')} type="password" value={newPassword} onChange={setNewPassword} icon={Lock} placeholder={t('profile.placeholders.newPass')} required minLength={8} />
+      <FieldInput label={t('profile.labels.confirmPass')} type="password" value={confirmPassword} onChange={setConfirmPassword} icon={Lock} required minLength={8} />
       {error && <ErrorText>{error}</ErrorText>}
       <div className="flex items-center gap-3">
-        <SubmitButton busy={busy}>Update Password</SubmitButton>
+        <SubmitButton busy={busy}>{t('profile.btnUpdatePass')}</SubmitButton>
         {status && <span className="text-sm font-medium text-primary">{status}</span>}
       </div>
     </form>

@@ -3,12 +3,14 @@ import { useEffect, useState } from "react";
 import { ArrowLeft, Package, CreditCard } from "lucide-react";
 import { getCustomerSession, getMyOrders, type CustomerSession } from "@/lib/customer-auth.functions";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 
 export const Route = createFileRoute("/requests")({
   component: RequestsPage,
 });
 
 function RequestsPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [session, setSession] = useState<CustomerSession | null>(null);
   const [checked, setChecked] = useState(false);
@@ -32,7 +34,7 @@ function RequestsPage() {
   if (!checked || !session) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
-        <p className="text-sm text-muted-foreground">Loading…</p>
+        <p className="text-sm text-muted-foreground">{t('requests.loading')}</p>
       </div>
     );
   }
@@ -41,7 +43,7 @@ function RequestsPage() {
     <div className="min-h-screen bg-background px-4 py-12">
       <div className="mx-auto max-w-4xl">
         <Link to="/" className="mb-8 inline-flex items-center gap-2 text-sm font-semibold text-muted-foreground transition hover:text-foreground">
-          <ArrowLeft className="h-4 w-4" /> Back to Home
+          <ArrowLeft className="h-4 w-4" /> {t('requests.backToHome')}
         </Link>
 
         <div className="mb-8 flex items-center gap-3">
@@ -49,21 +51,21 @@ function RequestsPage() {
             <Package className="h-6 w-6" />
           </div>
           <div>
-            <h1 className="font-display text-2xl font-bold tracking-tight text-foreground">Service Requests</h1>
-            <p className="text-sm text-muted-foreground">View and track the status of your services.</p>
+            <h1 className="font-display text-2xl font-bold tracking-tight text-foreground">{t('requests.title')}</h1>
+            <p className="text-sm text-muted-foreground">{t('requests.subtitle')}</p>
           </div>
         </div>
 
         {isLoading ? (
-          <div className="card-surface p-8 text-center text-sm text-muted-foreground">Loading requests...</div>
+          <div className="card-surface p-8 text-center text-sm text-muted-foreground">{t('requests.loadingRequests')}</div>
         ) : !orders || orders.length === 0 ? (
-          <div className="card-surface p-8 text-center text-sm text-muted-foreground">You have no service requests yet.</div>
+          <div className="card-surface p-8 text-center text-sm text-muted-foreground">{t('requests.empty')}</div>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2">
             {orders.map((order, i) => (
               <div key={i} className="card-surface p-5">
                 <div className="flex items-start justify-between gap-2">
-                  <h4 className="font-display text-base font-semibold text-foreground">Order</h4>
+                  <h4 className="font-display text-base font-semibold text-foreground">{t('requests.orderTitle')}</h4>
                   <span className="whitespace-nowrap text-xs text-muted-foreground">
                     {new Date(order.timestamp).toLocaleDateString()}
                   </span>

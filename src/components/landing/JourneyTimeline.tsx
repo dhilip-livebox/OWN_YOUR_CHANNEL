@@ -1,14 +1,17 @@
 import { journeySteps } from "@/data/journey";
 import { SectionHeading } from "./SectionHeading";
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 
 export function JourneyTimeline() {
+  const { t } = useTranslation();
+
   return (
     <section id="journey" className="mx-auto max-w-[1600px] px-6 py-24">
       <SectionHeading
-        eyebrow="The complete journey"
-        title="From idea to a full television network."
-        subtitle="Nine steps. Everything you need — nothing you don't."
+        eyebrow={t('journey.eyebrow')}
+        title={t('journey.title')}
+        subtitle={t('journey.subtitle')}
       />
       <ol className="relative mt-14 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {journeySteps.map((step, i) => (
@@ -24,8 +27,8 @@ export function JourneyTimeline() {
               {String(i + 1).padStart(2, "0")}
             </span>
             <div className="min-w-0">
-              <h3 className="font-display text-base font-semibold text-foreground">{step.title}</h3>
-              <p className="mt-1 text-sm text-muted-foreground">{step.body}</p>
+              <h3 className="font-display text-base font-semibold text-foreground">{t(`journey.steps.${i}.title`, { defaultValue: step.title })}</h3>
+              <p className="mt-1 text-sm text-muted-foreground">{t(`journey.steps.${i}.body`, { defaultValue: step.body })}</p>
             </div>
           </motion.li>
         ))}

@@ -1,20 +1,8 @@
-import { createFileRoute } from '@tanstack/react-router';
-import { PricingTable } from '@/components/landing/PricingTable';
-import { SiteHeader } from '@/components/landing/SiteHeader';
-import { SiteFooter } from '@/components/landing/SiteFooter';
+import { createFileRoute, redirect } from '@tanstack/react-router';
 
 export const Route = createFileRoute('/purchase')({
-  component: PurchasePage,
+  beforeLoad: () => {
+    throw redirect({ to: '/build-server' });
+  },
+  component: () => null,
 });
-
-function PurchasePage() {
-  return (
-    <div className="min-h-screen flex flex-col bg-background text-foreground">
-      <SiteHeader />
-      <main className="flex-1 py-12">
-        <PricingTable />
-      </main>
-      <SiteFooter />
-    </div>
-  );
-}

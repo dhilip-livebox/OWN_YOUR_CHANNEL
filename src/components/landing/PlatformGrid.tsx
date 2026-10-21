@@ -1,15 +1,17 @@
 import { platforms } from "@/data/platforms";
 import { SectionHeading } from "./SectionHeading";
+import { useTranslation } from "react-i18next";
 
 export function PlatformGrid() {
+  const { t } = useTranslation();
   return (
     <section id="platforms" className="relative border-y border-border/60 bg-surface/40 py-24">
       <div className="mx-auto max-w-[1600px] px-6">
         <SectionHeading
           align="center"
-          eyebrow="Broadcast everywhere at once"
-          title="One channel. Every screen. Simultaneously."
-          subtitle="Push a single feed — arrive on every platform your audience already uses."
+          eyebrow={t('platformGrid.eyebrow')}
+          title={t('platformGrid.title')}
+          subtitle={t('platformGrid.subtitle')}
         />
         <div className="mx-auto mt-14 grid max-w-4xl grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-6">
           {platforms.map(({ icon: Icon, label }) => (

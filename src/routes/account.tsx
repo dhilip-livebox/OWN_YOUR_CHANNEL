@@ -12,9 +12,10 @@ import {
   verifyResetOtp,
   resetPassword,
 } from "@/lib/customer-auth.functions";
+import { useTranslation } from "react-i18next";
 
 const accountSearchSchema = z.object({
-  redirect: z.enum(["/services", "/purchase", "/"]).optional(),
+  redirect: z.string().optional(),
   tab: z.enum(["login", "register"]).optional(),
   category: z.string().optional(),
 });
@@ -25,6 +26,7 @@ export const Route = createFileRoute("/account")({
 });
 
 function AccountPage() {
+  const { t } = useTranslation();
   const { redirect, tab, category } = Route.useSearch();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<"login" | "register">(tab ?? "login");
@@ -51,8 +53,8 @@ function AccountPage() {
         <div className="card-surface p-8">
           <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "login" | "register")}>
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="login">Login</TabsTrigger>
-              <TabsTrigger value="register">Register</TabsTrigger>
+              <TabsTrigger value="login">{t('account.loginTab')}</TabsTrigger>
+              <TabsTrigger value="register">{t('account.registerTab')}</TabsTrigger>
             </TabsList>
             <TabsContent value="login" className="mt-6">
               <LoginPanel onSuccess={onAuthSuccess} />
@@ -68,6 +70,7 @@ function AccountPage() {
 }
 
 function LoginPanel({ onSuccess }: { onSuccess: () => void }) {
+  const { t } = useTranslation();
   const [mode, setMode] = useState<"login" | "forgot-email" | "forgot-otp" | "forgot-newpass">("login");
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
@@ -133,11 +136,11 @@ function LoginPanel({ onSuccess }: { onSuccess: () => void }) {
     return (
       <form onSubmit={handleRequestReset} className="space-y-4">
         <p className="text-sm text-muted-foreground">
-          Enter the email on your account and we'll send you a 6-digit code to reset your password.
+          {t('account.forgotEmailDesc')}
         </p>
-        <FieldInput label="Email" type="email" value={resetEmail} onChange={setResetEmail} icon={Mail} placeholder="you@example.com" required />
+        <FieldInput label={t('account.labels.email')} type="email" value={resetEmail} onChange={setResetEmail} icon={Mail} placeholder={t('account.placeholders.email')} required />
         {error && <ErrorText>{error}</ErrorText>}
-        <SubmitButton busy={busy}>Send reset code</SubmitButton>
+        <SubmitButton busy={busy}>{t('account.forgotEmailBtn')}</SubmitButton>
         <BackLink onClick={() => setMode("login")} />
       </form>
     );
@@ -176,24 +179,25 @@ function LoginPanel({ onSuccess }: { onSuccess: () => void }) {
 
   return (
     <form onSubmit={handleLogin} className="space-y-4">
-      <FieldInput label="Email or Mobile Number" type="text" value={identifier} onChange={setIdentifier} icon={Mail} placeholder="you@example.com or 98765 43210" required />
-      <FieldInput label="Password" type="password" value={password} onChange={setPassword} icon={Lock} placeholder="••••••••" required />
+      <FieldInput label={t('account.labels.identifier')} type="text" value={identifier} onChange={setIdentifier} icon={Mail} placeholder={t('account.placeholders.identifier')} required />
+      <FieldInput label={t('account.labels.password')} type="password" value={password} onChange={setPassword} icon={Lock} placeholder={t('account.placeholders.password')} required />
       <div className="flex items-center justify-between text-sm">
         <label className="flex items-center gap-2 text-muted-foreground">
           <Checkbox checked={remember} onCheckedChange={(v) => setRemember(!!v)} />
-          Remember Me
+          {t('account.rememberMe')}
         </label>
         <button type="button" onClick={() => setMode("forgot-email")} className="font-medium text-primary hover:brightness-110">
-          Forgot Password?
+          {t('account.forgotPasswordLink')}
         </button>
       </div>
       {error && <ErrorText>{error}</ErrorText>}
-      <SubmitButton busy={busy}>Login</SubmitButton>
+      <SubmitButton busy={busy}>{t('account.btnLogin')}</SubmitButton>
     </form>
   );
 }
 
 function RegisterPanel({ onSuccess }: { onSuccess: () => void }) {
+  const { t } = useTranslation();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [mobile, setMobile] = useState("");
@@ -222,13 +226,13 @@ function RegisterPanel({ onSuccess }: { onSuccess: () => void }) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <FieldInput label="Full Name" type="text" value={name} onChange={setName} icon={UserIcon} placeholder="John Doe" required />
-      <FieldInput label="Mobile Number" type="tel" value={mobile} onChange={setMobile} icon={Phone} placeholder="+91 98765 43210" required />
-      <FieldInput label="Email Address" type="email" value={email} onChange={setEmail} icon={Mail} placeholder="you@example.com" required />
-      <FieldInput label="Password" type="password" value={password} onChange={setPassword} icon={Lock} placeholder="At least 8 characters" required minLength={8} />
-      <FieldInput label="Confirm Password" type="password" value={confirmPassword} onChange={setConfirmPassword} icon={Lock} placeholder="Re-enter password" required minLength={8} />
+      <FieldInput label={t('account.labels.name')} type="text" value={name} onChange={setName} icon={UserIcon} placeholder={t('account.placeholders.name')} required />
+      <FieldInput label={t('account.labels.mobile')} type="tel" value={mobile} onChange={setMobile} icon={Phone} placeholder={t('account.placeholders.mobile')} required />
+      <FieldInput label={t('account.labels.emailAddress')} type="email" value={email} onChange={setEmail} icon={Mail} placeholder={t('account.placeholders.email')} required />
+      <FieldInput label={t('account.labels.password')} type="password" value={password} onChange={setPassword} icon={Lock} placeholder={t('account.placeholders.newPass')} required minLength={8} />
+      <FieldInput label={t('account.labels.confirmPass')} type="password" value={confirmPassword} onChange={setConfirmPassword} icon={Lock} placeholder={t('account.placeholders.confirmPass')} required minLength={8} />
       {error && <ErrorText>{error}</ErrorText>}
-      <SubmitButton busy={busy}>Create Account</SubmitButton>
+      <SubmitButton busy={busy}>{t('account.btnRegister')}</SubmitButton>
     </form>
   );
 }

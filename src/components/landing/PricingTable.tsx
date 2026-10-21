@@ -7,6 +7,7 @@ import { computeAnnualPricing, getEffectivePrice, type BillingCycle } from "@/li
 import { getCustomerSession } from "@/lib/customer-auth.functions";
 import { loadCart, saveCart, clearCart } from "@/lib/cart";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { useTranslation } from "react-i18next";
 
 const defaultServices = [
   {
@@ -154,6 +155,7 @@ const defaultServices = [
 }));
 
 export function PricingTable() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { data: servicesData } = useQuery({
     queryKey: ["pricing"],
@@ -253,10 +255,10 @@ export function PricingTable() {
       <div className="mx-auto max-w-[1600px] px-4 sm:px-6">
         <div className="text-center">
           <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-            Our Services & Pricing
+            {t('pricingTable.title')}
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
-            All our Servers are available on a yearly basis. Our Servers are highly cost effective — costing only Rs.299 to Rs.399 per month when taken as a package on a yearly basis.
+            {t('pricingTable.subtitle')}
           </p>
           {!isCheckoutMode && (
             <div className="mt-6 flex justify-center">
@@ -267,10 +269,10 @@ export function PricingTable() {
                 className="rounded-full border border-border bg-card p-1 shadow-sm"
               >
                 <ToggleGroupItem value="monthly" className="rounded-full px-5 py-2 text-sm font-semibold data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
-                  Monthly
+                  {t('pricingTable.monthly')}
                 </ToggleGroupItem>
                 <ToggleGroupItem value="annual" className="rounded-full px-5 py-2 text-sm font-semibold data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
-                  Annual
+                  {t('pricingTable.yearly')}
                 </ToggleGroupItem>
               </ToggleGroup>
             </div>

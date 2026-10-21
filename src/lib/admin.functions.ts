@@ -57,7 +57,7 @@ export const getLeadStats = async (): Promise<LeadStats> => {
   if (!status.unlocked) throw new Error("Unauthorized");
 
   // Hardcode the Google Apps Script endpoint here or use a VITE_ env var
-  const endpoint = import.meta.env.VITE_SHEETS_ENDPOINT || "https://script.google.com/macros/s/AKfycbzL5u2QfR4t-P3tW9J7J9jR7J9/exec"; // Update to the actual URL
+  const endpoint = import.meta.env.VITE_SHEETS_ENDPOINT || "https://script.google.com/macros/s/AKfycbyGLOXSq1QHFZGxuaGZDDKRXQY9mpNqdXrEnVSC7R9Jn5fp4wj4-ohXk1p2mKbWsfVIRA/exec"; // Update to the actual URL
   if (!endpoint) return emptyStats();
   
   try {
@@ -94,7 +94,7 @@ export const getConsultations = async (): Promise<ConsultationLead[]> => {
   const status = await adminStatus();
   if (!status.unlocked) throw new Error("Unauthorized");
 
-  const endpoint = import.meta.env.VITE_SHEETS_ENDPOINT || "https://script.google.com/macros/s/AKfycbzL5u2QfR4t-P3tW9J7J9jR7J9/exec";
+  const endpoint = import.meta.env.VITE_SHEETS_ENDPOINT || "https://script.google.com/macros/s/AKfycbyGLOXSq1QHFZGxuaGZDDKRXQY9mpNqdXrEnVSC7R9Jn5fp4wj4-ohXk1p2mKbWsfVIRA/exec";
   if (!endpoint) return [];
 
   try {
@@ -127,7 +127,7 @@ export const getOrders = async (): Promise<OrderRecord[]> => {
   const status = await adminStatus();
   if (!status.unlocked) throw new Error("Unauthorized");
 
-  const endpoint = import.meta.env.VITE_SHEETS_ENDPOINT || "https://script.google.com/macros/s/AKfycbzL5u2QfR4t-P3tW9J7J9jR7J9/exec";
+  const endpoint = import.meta.env.VITE_SHEETS_ENDPOINT || "https://script.google.com/macros/s/AKfycbyGLOXSq1QHFZGxuaGZDDKRXQY9mpNqdXrEnVSC7R9Jn5fp4wj4-ohXk1p2mKbWsfVIRA/exec";
   if (!endpoint) return [];
 
   try {
@@ -145,7 +145,7 @@ export const updateOrderStatus = async (timestamp: string, email: string, status
   const auth = await adminStatus();
   if (!auth.unlocked) throw new Error("Unauthorized");
 
-  const endpoint = import.meta.env.VITE_SHEETS_ENDPOINT || "https://script.google.com/macros/s/AKfycbzL5u2QfR4t-P3tW9J7J9jR7J9/exec";
+  const endpoint = import.meta.env.VITE_SHEETS_ENDPOINT || "https://script.google.com/macros/s/AKfycbyGLOXSq1QHFZGxuaGZDDKRXQY9mpNqdXrEnVSC7R9Jn5fp4wj4-ohXk1p2mKbWsfVIRA/exec";
   if (!endpoint) throw new Error("No endpoint configured");
 
   fetch(endpoint, {
@@ -162,7 +162,7 @@ export const updateLeadStatus = async (timestamp: string, email: string, status:
   const auth = await adminStatus();
   if (!auth.unlocked) throw new Error("Unauthorized");
 
-  const endpoint = import.meta.env.VITE_SHEETS_ENDPOINT || "https://script.google.com/macros/s/AKfycbzL5u2QfR4t-P3tW9J7J9jR7J9/exec";
+  const endpoint = import.meta.env.VITE_SHEETS_ENDPOINT || "https://script.google.com/macros/s/AKfycbyGLOXSq1QHFZGxuaGZDDKRXQY9mpNqdXrEnVSC7R9Jn5fp4wj4-ohXk1p2mKbWsfVIRA/exec";
   if (!endpoint) throw new Error("No endpoint configured");
 
   fetch(endpoint, {
@@ -171,6 +171,58 @@ export const updateLeadStatus = async (timestamp: string, email: string, status:
     headers: { "Content-Type": "text/plain;charset=utf-8" },
     body: JSON.stringify({ type: "update_lead_status", timestamp, email, status }),
   }).catch((err) => console.error("updateLeadStatus failed", err));
+
+  return { ok: true };
+};
+
+export type UniversalEnquiry = {
+  timestamp: string;
+  name: string;
+  company: string;
+  whatsapp: string;
+  email: string;
+  country: string;
+  goal: string;
+  platforms: string;
+  audience: string;
+  continuous: string;
+  brand: string;
+  infrastructure: string;
+  description: string;
+  status: string;
+};
+
+export const getUniversalEnquiries = async (): Promise<UniversalEnquiry[]> => {
+  const status = await adminStatus();
+  if (!status.unlocked) throw new Error("Unauthorized");
+
+  const endpoint = import.meta.env.VITE_SHEETS_ENDPOINT || "https://script.google.com/macros/s/AKfycbyGLOXSq1QHFZGxuaGZDDKRXQY9mpNqdXrEnVSC7R9Jn5fp4wj4-ohXk1p2mKbWsfVIRA/exec";
+  if (!endpoint) return [];
+
+  try {
+    const res = await fetch(`${endpoint}?action=universal_enquiries`, { method: "GET" });
+    if (!res.ok) return [];
+    const json = (await res.json()) as { enquiries: UniversalEnquiry[] };
+    return json.enquiries || [];
+  } catch (err) {
+    console.error("getUniversalEnquiries failed", err);
+    return [];
+  }
+};
+
+export const updateUniversalEnquiryStatus = async (timestamp: string, email: string, status: string) => {
+  const auth = await adminStatus();
+  if (!auth.unlocked) throw new Error("Unauthorized");
+
+  const endpoint = import.meta.env.VITE_SHEETS_ENDPOINT || "https://script.google.com/macros/s/AKfycbyGLOXSq1QHFZGxuaGZDDKRXQY9mpNqdXrEnVSC7R9Jn5fp4wj4-ohXk1p2mKbWsfVIRA/exec";
+  if (!endpoint) throw new Error("No endpoint configured");
+
+  fetch(endpoint, {
+    method: "POST",
+    mode: "no-cors",
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify({ type: "update_universal_enquiry_status", timestamp, email, status }),
+  }).catch((err) => console.error("updateUniversalEnquiryStatus failed", err));
 
   return { ok: true };
 };
@@ -207,7 +259,7 @@ function setCachedPricing(services: PricingService[]) {
 }
 
 export const getPricing = async (): Promise<PricingService[]> => {
-  const endpoint = import.meta.env.VITE_SHEETS_ENDPOINT || "https://script.google.com/macros/s/AKfycbzL5u2QfR4t-P3tW9J7J9jR7J9/exec";
+  const endpoint = import.meta.env.VITE_SHEETS_ENDPOINT || "https://script.google.com/macros/s/AKfycbyGLOXSq1QHFZGxuaGZDDKRXQY9mpNqdXrEnVSC7R9Jn5fp4wj4-ohXk1p2mKbWsfVIRA/exec";
   if (!endpoint) return getCachedPricingSync();
 
   try {
@@ -227,7 +279,7 @@ export const updatePricing = async (services: PricingService[]) => {
   const status = await adminStatus();
   if (!status.unlocked) throw new Error("Unauthorized");
 
-  const endpoint = import.meta.env.VITE_SHEETS_ENDPOINT || "https://script.google.com/macros/s/AKfycbzL5u2QfR4t-P3tW9J7J9jR7J9/exec";
+  const endpoint = import.meta.env.VITE_SHEETS_ENDPOINT || "https://script.google.com/macros/s/AKfycbyGLOXSq1QHFZGxuaGZDDKRXQY9mpNqdXrEnVSC7R9Jn5fp4wj4-ohXk1p2mKbWsfVIRA/exec";
   if (!endpoint) throw new Error("No endpoint configured");
 
   // Update the local cache immediately and fire the request without awaiting it — Apps Script's
@@ -263,7 +315,7 @@ function setCachedServerComponents(components: ComponentItem[]) {
 }
 
 export const getServerComponents = async (): Promise<ComponentItem[]> => {
-  const endpoint = import.meta.env.VITE_SHEETS_ENDPOINT || "https://script.google.com/macros/s/AKfycbzL5u2QfR4t-P3tW9J7J9jR7J9/exec";
+  const endpoint = import.meta.env.VITE_SHEETS_ENDPOINT || "https://script.google.com/macros/s/AKfycbyGLOXSq1QHFZGxuaGZDDKRXQY9mpNqdXrEnVSC7R9Jn5fp4wj4-ohXk1p2mKbWsfVIRA/exec";
   if (!endpoint) return getCachedServerComponentsSync();
 
   try {
@@ -283,7 +335,7 @@ export const updateServerComponents = async (components: ComponentItem[]) => {
   const status = await adminStatus();
   if (!status.unlocked) throw new Error("Unauthorized");
 
-  const endpoint = import.meta.env.VITE_SHEETS_ENDPOINT || "https://script.google.com/macros/s/AKfycbzL5u2QfR4t-P3tW9J7J9jR7J9/exec";
+  const endpoint = import.meta.env.VITE_SHEETS_ENDPOINT || "https://script.google.com/macros/s/AKfycbyGLOXSq1QHFZGxuaGZDDKRXQY9mpNqdXrEnVSC7R9Jn5fp4wj4-ohXk1p2mKbWsfVIRA/exec";
   if (!endpoint) throw new Error("No endpoint configured");
 
   setCachedServerComponents(components);
@@ -316,7 +368,7 @@ function setCachedRequirementOptions(opts: RequirementsConfig) {
 }
 
 export const getRequirementOptions = async (): Promise<RequirementsConfig | null> => {
-  const endpoint = import.meta.env.VITE_SHEETS_ENDPOINT || "https://script.google.com/macros/s/AKfycbzL5u2QfR4t-P3tW9J7J9jR7J9/exec";
+  const endpoint = import.meta.env.VITE_SHEETS_ENDPOINT || "https://script.google.com/macros/s/AKfycbyGLOXSq1QHFZGxuaGZDDKRXQY9mpNqdXrEnVSC7R9Jn5fp4wj4-ohXk1p2mKbWsfVIRA/exec";
   if (!endpoint) return getCachedRequirementOptionsSync();
 
   try {
@@ -336,7 +388,7 @@ export const updateRequirementOptions = async (options: RequirementsConfig) => {
   const status = await adminStatus();
   if (!status.unlocked) throw new Error("Unauthorized");
 
-  const endpoint = import.meta.env.VITE_SHEETS_ENDPOINT || "https://script.google.com/macros/s/AKfycbzL5u2QfR4t-P3tW9J7J9jR7J9/exec";
+  const endpoint = import.meta.env.VITE_SHEETS_ENDPOINT || "https://script.google.com/macros/s/AKfycbyGLOXSq1QHFZGxuaGZDDKRXQY9mpNqdXrEnVSC7R9Jn5fp4wj4-ohXk1p2mKbWsfVIRA/exec";
   if (!endpoint) throw new Error("No endpoint configured");
 
   setCachedRequirementOptions(options);

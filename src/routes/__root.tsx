@@ -75,11 +75,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   errorComponent: ErrorComponent,
 });
 
+import { WhatsAppWidget } from "../components/ui/WhatsAppWidget";
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   return (
     <QueryClientProvider client={queryClient}>
       <Outlet />
+      <WhatsAppWidget />
     </QueryClientProvider>
   );
 }

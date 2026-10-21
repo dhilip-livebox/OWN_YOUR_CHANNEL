@@ -1,17 +1,20 @@
 import { liveChannels } from "@/data/liveChannels";
 import { SectionHeading } from "./SectionHeading";
 import { LiveChannelPlayer } from "./LiveChannelPlayer";
+import { useTranslation } from "react-i18next";
 
 export function ChannelsSection({ registered }: { registered: boolean }) {
+  const { t } = useTranslation();
+
   return (
     <section id="channels" className="relative border-y border-border/60 bg-surface/40 py-24">
       <div className="mx-auto max-w-[1600px] px-6">
         {/* Live channels Heading */}
         <div className="mb-10 flex flex-wrap items-end justify-between gap-6">
           <SectionHeading
-            eyebrow="Live now"
-            title="Channels streaming live right now"
-            subtitle="Real channels, built and broadcasting on Ai ivb7 — watch a few of them live."
+            eyebrow={t('channelsSection.eyebrow')}
+            title={t('channelsSection.title')}
+            subtitle={t('channelsSection.subtitle')}
           />
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <span className="relative flex h-2 w-2">

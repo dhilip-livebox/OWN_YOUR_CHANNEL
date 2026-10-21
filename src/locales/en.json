@@ -1,0 +1,576 @@
+{
+  "nav": {
+    "home": "Home",
+    "startChannel": "Start Channel",
+    "solutions": "Solutions",
+    "serverBuilder": "Server Builder",
+    "privateInfra": "Private Infra",
+    "industries": "Industries",
+    "contact": "Contact",
+    "talkToUs": "TALK TO US",
+    "signIn": "Sign In",
+    "signUp": "Sign Up",
+    "chooseLanguage": "Choose Your Language"
+  },
+  "solutions": {
+    "liveTvChannel": "Live TV Channel",
+    "multiPlatform": "Multi-Platform Streaming",
+    "ott": "OTT / IPTV",
+    "iptv": "IPTV",
+    "professionalPlayout": "Professional Playout",
+    "automatedStreaming": "Automated Streaming",
+    "reStreaming": "Re-Streaming",
+    "srtStreaming": "SRT Streaming",
+    "rtspStreaming": "RTSP Streaming",
+    "lowLatency": "Low-Latency Streaming",
+    "radioStreaming": "Radio Streaming",
+    "mobileBroadcasting": "Mobile Broadcasting",
+    "multiCamera": "Multi-Camera Production",
+    "localTv": "Local TV Distribution",
+    "privateVideo": "Private Video Network"
+  },
+  "hero": {
+    "liveAcross": "LIVE across Facebook, YouTube, OTT & Cable — simultaneously",
+    "headline": "FROM YOUR FIRST TV CHANNEL TO YOUR OWN GLOBAL MEDIA NETWORK",
+    "subheadline": "Start Small. Choose What You Need. Scale Without Limits.",
+    "features": "24×7 TV • Live Streaming • OTT • IPTV • Apps • Playout • Private Servers • Private CDN",
+    "audience": "For Individuals • Startups • Businesses • Institutions • Broadcasters • Enterprises",
+    "startChannelBtn": "START YOUR CHANNEL",
+    "buildServerBtn": "BUILD YOUR OWN SERVER",
+    "talkConsultantBtn": "TALK TO OUR MEDIA CONSULTANT"
+  },
+  "actionCards": {
+    "buyEverythingHeader": "You don't have to buy everything.",
+    "buyEverythingDesc": "Take one service, combine multiple services, or ask us to build the complete solution for you.",
+    "achieveHeader": "What do you want to achieve?",
+    "achieveDesc": "Tell us your goal. We will recommend and provide the right technology.",
+    "startChannelTitle": "Start My Own TV Channel",
+    "startChannelDesc": "For people who want a ready-to-use 24×7 TV channel.",
+    "startChannelBtn": "Start My Channel",
+    "multiPlatformTitle": "Stream Everywhere",
+    "multiPlatformDesc": "For customers wanting to send one live stream to multiple platforms.",
+    "multiPlatformBtn": "Explore Multi-Platform",
+    "ottTitle": "Launch My OTT / IPTV",
+    "ottDesc": "For customers wanting their own OTT, IPTV, subscriber platform, website or apps.",
+    "ottBtn": "Build My OTT / IPTV",
+    "automationTitle": "Automate My Channel",
+    "automationDesc": "For customers wanting scheduled videos, automated playout and 24×7 broadcasting.",
+    "automationBtn": "Explore Automation",
+    "privateNetworkTitle": "Build a Private Media Network",
+    "privateNetworkDesc": "For enterprises, institutions and broadcasters wanting dedicated infrastructure, private cloud, CDN or on-premise deployment.",
+    "privateNetworkBtn": "Private Infrastructure",
+    "technicalHeader": "What components do you require?",
+    "technicalDesc": "Select individual infrastructure components and build your own solution.",
+    "forTechnicalUsers": "For Technical Users",
+    "customServerTitle": "Build Your Custom Server",
+    "customServerDesc": "For technical users who know exactly what they need. Mix and match individual components.",
+    "customServerBtn": "Open Server Builder",
+    "socialMedia": "Social Media",
+    "website": "Website",
+    "mobileApp": "Mobile App",
+    "ott": "OTT",
+    "iptv": "IPTV",
+    "localTv": "Local TV",
+    "rtmp": "RTMP / SRT / RTSP",
+    "reStreaming": "Re-Streaming",
+    "transcoding": "Transcoding",
+    "storage": "Storage",
+    "bandwidth": "Bandwidth",
+    "players": "Players"
+  },
+  "benefits": {
+    "eyebrow": "Why your own channel",
+    "title": "Everything a satellite network has. Almost none of the cost.",
+    "subtitle": "A full broadcast stack — automated, always-on, and owned by you.",
+    "items": {
+      "0": {
+        "title": "No high-speed internet needed",
+        "body": "Your studio doesn't need a datacenter uplink. Push once — broadcast globally."
+      },
+      "1": {
+        "title": "No computer left ON 24×7",
+        "body": "Programming runs on your broadcast servers, not your laptop."
+      },
+      "2": {
+        "title": "Own your broadcasting servers",
+        "body": "You control the infrastructure. Your channel. Your rules."
+      },
+      "3": {
+        "title": "Reach viewers worldwide",
+        "body": "Every major platform, every screen — simultaneously."
+      },
+      "4": {
+        "title": "Fraction of satellite TV cost",
+        "body": "Launch a full network without the seven-figure infrastructure bill."
+      }
+    }
+  },
+  "footer": {
+    "engine": "ONE MEDIA ENGINE. UNLIMITED POSSIBILITIES.",
+    "start": "Start with one service. Combine what you need. Scale when you grow.",
+    "desc": "From your first live stream to your own private media network — CDTECH can build the infrastructure around your requirement.",
+    "explore": "Explore",
+    "home": "Home",
+    "resources": "Resources",
+    "register": "Register",
+    "contact": "Contact",
+    "connect": "Connect",
+    "rights": "All rights reserved.",
+    "tagline": "Broadcast tech, reimagined."
+  },
+  "contact": {
+    "eyebrow": "Get in touch",
+    "title": "We're here to help",
+    "subtitle": "Have questions about launching your channel? Reach out to our team.",
+    "callUs": "Call Us",
+    "emailUs": "Email Us",
+    "visitUs": "Visit Us"
+  },
+  "registration": {
+    "expertGuidance": "Expert Guidance",
+    "title": "Register to get free consulting.",
+    "subtitle": "Fill out the form below and our team will get in touch with you to provide expert guidance on launching your channel.",
+    "perks": {
+      "0": "Free broadcast & automation software",
+      "1": "Step-by-step launch guides",
+      "2": "Full video library access",
+      "3": "Docs, templates & checklists",
+      "4": "Training materials",
+      "5": "More tools added weekly"
+    },
+    "labels": {
+      "name": "Name",
+      "phone": "Phone number",
+      "email": "Email address",
+      "country": "Country",
+      "state": "State",
+      "city": "City",
+      "language": "Preferred Language",
+      "interest": "What are you interested in?",
+      "other": "Tell us more…"
+    },
+    "btnRegistering": "Registering…",
+    "btnSubmit": "Register to get free consulting",
+    "disclaimer": "We'll never share your details. One-tap unsubscribe anytime.",
+    "successTitle": "Request Received!",
+    "successDesc": "We will reach out to you soon, or our support team will contact you shortly to discuss your requirements."
+  },
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "subtitle": "Find answers to common questions about our services and processes.",
+    "q1": "How do I start my own Live TV channel?",
+    "a1": "With Ai ivb7 you can set up your own branded Live TV channel in days, not months — we handle the servers, encoding and delivery so you can focus on content.",
+    "q2": "Can I broadcast 24×7 without keeping my computer on?",
+    "a2": "Yes. Your programming runs on our broadcast servers, not your laptop — schedule once and it keeps streaming 24×7 even when your computer is off.",
+    "q3": "Do I need high-speed internet to broadcast?",
+    "a3": "No. Our servers handle the heavy lifting, so even a modest internet connection at your location is enough to push your feed live.",
+    "q4": "Can AI really automate my TV channel?",
+    "a4": "Yes — AI can schedule, program and run your channel automatically: playlists, ad insertion, and fully automated Live TV without manual intervention.",
+    "q5": "Can I broadcast to multiple platforms at the same time?",
+    "a5": "Yes. One upload broadcasts simultaneously to Facebook, YouTube, OTT platforms, IPTV, websites and local cable — no repeated uploads needed.",
+    "q6": "Can I combine social media, OTT and local cable TV?",
+    "a6": "Yes — you're not limited to one distribution channel. Social media, OTT apps and local cable TV can all carry your channel from the same feed.",
+    "q7": "Do I own the broadcasting servers?",
+    "a7": "Yes. You get your own dedicated broadcasting servers with full control — it's your infrastructure and your rules, not a shared or rented slot.",
+    "q8": "Can I build my own television network?",
+    "a8": "Absolutely. With your own servers, control panel and branding, you can build a full multi-channel television network under your own name.",
+    "q9": "How much cheaper is this than satellite TV?",
+    "a9": "A fraction of the cost — no transponder leasing or satellite uplink infrastructure required, just our AI-powered broadcast servers.",
+    "q10": "Can I reach viewers worldwide?",
+    "a10": "Yes. Once you're live, your channel reaches viewers on every major platform and screen — anywhere in the world with an internet connection."
+  },
+  "journey": {
+    "eyebrow": "The complete journey",
+    "title": "From idea to a full television network.",
+    "subtitle": "Nine steps. Everything you need — nothing you don't."
+  },
+  "solutionsPage": {
+    "notFound": "Solution Not Found",
+    "notFoundDesc": "The solution you are looking for does not exist.",
+    "returnHome": "Return Home",
+    "whatIsIt": "What is it?",
+    "whoNeedsIt": "Who needs it?",
+    "whatCanYouDo": "What can you do with it?",
+    "howWeProvide": "How can CDTECH provide it?",
+    "needOnlyThis": "Need only this service?",
+    "takeItIndependently": "Take it independently.",
+    "needMore": "Need more?",
+    "combineIt": "Combine it with other services to create your own solution.",
+    "buildMySolution": "BUILD MY SOLUTION"
+  },
+  "whatsapp": {
+    "talkToConsultant": "TALK TO OUR MEDIA CONSULTANT"
+  },
+  "serverBuilder": {
+    "title": "BUILD YOUR OWN STREAMING SERVER",
+    "desc": "Choose the exact components you need. We will combine, configure and deploy them for you.",
+    "missingTitle": "Missing Required Components",
+    "missingDesc": "You have selected components that depend on others for a complete working solution. Please add the required components highlighted in red below.",
+    "add": "Add",
+    "remove": "Remove",
+    "added": "Added",
+    "required": "Required",
+    "recommended": "Recommended",
+    "defaultDesc": "Stream and manage your content effectively.",
+    "hardwareNetwork": "Hardware & Network",
+    "bandwidth": "Bandwidth",
+    "storage": "Storage",
+    "player": "Player",
+    "requiredForServer": "Required for selected server",
+    "selectBandwidth": "-- Select Bandwidth --",
+    "selectStorage": "-- Select Storage --",
+    "selectPlayer": "-- Select Player --",
+    "backToBuilder": "← Back to Builder",
+    "orderSummary": "Order Summary",
+    "items": "items",
+    "subtotal": "Subtotal",
+    "gst": "GST (18%)",
+    "totalDue": "Total Due",
+    "includesTaxes": "Includes all taxes and fees",
+    "confirmPay": "Confirm & Pay",
+    "reviewDetails": "Review your details below, then reveal the secure payment QR code.",
+    "sessionExpired": "Your session has expired. Please sign in again to continue.",
+    "signIn": "Sign In",
+    "nameLabel": "Name",
+    "emailLabel": "Email",
+    "proceedPayment": "Proceed to Payment",
+    "orderConfirmed": "Order Confirmed!",
+    "scanQr": "Scan the QR below with any UPI app to securely pay",
+    "doneBtn": "Done",
+    "paymentDetails": "Payment Details",
+    "provideDetails": "Please provide your account name and transaction ID for verification.",
+    "accountUsername": "Account Username",
+    "accountPlaceholder": "Name on your account",
+    "txnId": "Transaction ID / UTR",
+    "txnPlaceholder": "e.g. 123456789012",
+    "submitDetails": "Submit Details",
+    "submitting": "Submitting...",
+    "thankYou": "Thank You!",
+    "successMsg": "Your payment details have been submitted. Our team will verify and activate your services shortly.",
+    "selectedItems": "Selected Items",
+    "gstAtCheckout": "+ 18% GST at checkout",
+    "proceedCheckout": "Proceed to Checkout →"
+  },
+  "channelsSection": {
+    "eyebrow": "Proven Platform",
+    "title": "Powering thousands of broadcasters.",
+    "subtitle": "From independent creators to 24×7 satellite networks."
+  },
+  "platformGrid": {
+    "eyebrow": "Omnichannel Delivery",
+    "title": "Broadcast everywhere.",
+    "subtitle": "One feed to rule them all. Push your stream to every platform simultaneously.",
+    "social": "Social Media",
+    "socialDesc": "YouTube, Facebook Live, Twitter, Twitch, and more.",
+    "ott": "OTT & IPTV",
+    "ottDesc": "Roku, Apple TV, Android TV, Fire TV, and custom apps.",
+    "web": "Web & Mobile",
+    "webDesc": "Embedded HTML5 players for your website and mobile apps.",
+    "cable": "Cable TV",
+    "cableDesc": "Traditional cable operators and local MSOs via standard protocols."
+  },
+  "pricingTable": {
+    "title": "Transparent pricing. No surprises.",
+    "subtitle": "Choose the plan that best fits your broadcasting needs.",
+    "monthly": "Monthly",
+    "yearly": "Yearly",
+    "getStarted": "Get Started",
+    "popular": "Most Popular",
+    "included": "What's included"
+  },
+  "account": {
+    "loginTab": "Login",
+    "registerTab": "Register",
+    "forgotEmailDesc": "Enter the email on your account and we'll send you a 6-digit code to reset your password.",
+    "forgotEmailBtn": "Send reset code",
+    "forgotOtpDesc": "Enter the 6-digit code sent to",
+    "forgotOtpBtn": "Verify code",
+    "forgotNewPassBtn": "Set new password",
+    "rememberMe": "Remember Me",
+    "forgotPasswordLink": "Forgot Password?",
+    "btnLogin": "Login",
+    "btnRegister": "Create Account",
+    "btnWait": "Please wait…",
+    "backLink": "← Back",
+    "labels": {
+      "email": "Email",
+      "newPass": "New Password",
+      "confirmPass": "Confirm Password",
+      "identifier": "Email or Mobile Number",
+      "password": "Password",
+      "name": "Full Name",
+      "mobile": "Mobile Number",
+      "emailAddress": "Email Address"
+    },
+    "placeholders": {
+      "email": "you@example.com",
+      "newPass": "At least 8 characters",
+      "confirmPass": "Re-enter password",
+      "identifier": "you@example.com or 98765 43210",
+      "password": "••••••••",
+      "name": "John Doe",
+      "mobile": "+91 98765 43210"
+    }
+  },
+  "profile": {
+    "backToHome": "Back to Home",
+    "title": "My Profile",
+    "subtitle": "Manage your account details and password.",
+    "accountDetails": "Account Details",
+    "changePassword": "Change Password",
+    "btnSave": "Save Changes",
+    "btnUpdatePass": "Update Password",
+    "btnWait": "Please wait…",
+    "labels": {
+      "name": "Full Name",
+      "email": "Email Address",
+      "mobile": "Mobile Number",
+      "currentPass": "Current Password",
+      "newPass": "New Password",
+      "confirmPass": "Confirm New Password"
+    },
+    "placeholders": {
+      "newPass": "At least 8 characters"
+    }
+  },
+  "resources": {
+    "checking": "Checking access…",
+    "backToHome": "Back to home",
+    "title": "Your free resources.",
+    "subtitle": "Everything is unlocked. Grab the software, follow a guide, or dive into training — new drops added weekly.",
+    "items": [
+      {
+        "title": "Broadcast software",
+        "body": "Automation & streaming toolkit. Latest build.",
+        "cta": "Download"
+      },
+      {
+        "title": "Launch guide (PDF)",
+        "body": "Zero-to-live in a single guided workflow.",
+        "cta": "Open PDF"
+      },
+      {
+        "title": "Video library",
+        "body": "Every tutorial we've ever produced.",
+        "cta": "Browse"
+      },
+      {
+        "title": "Docs & templates",
+        "body": "Schedules, rate cards, contracts, checklists.",
+        "cta": "Get pack"
+      },
+      {
+        "title": "Training program",
+        "body": "Self-paced modules with quizzes.",
+        "cta": "Start"
+      },
+      {
+        "title": "AI recipes",
+        "body": "Prompt packs for programming and graphics.",
+        "cta": "View"
+      }
+    ]
+  },
+  "privateInfrastructure": {
+    "title": "OWN YOUR MEDIA INFRASTRUCTURE",
+    "subtitle": "From a Dedicated Server to Your Own Private Cloud, CDN and Complete Media Network.",
+    "btnDiscuss": "DISCUSS MY PRIVATE MEDIA PROJECT",
+    "levelsTitle": "Infrastructure Levels",
+    "levelsSubtitle": "Scale your media network securely and efficiently.",
+    "levels": [
+      {
+        "title": "CLOUD ACCOUNT",
+        "description": "For small customers."
+      },
+      {
+        "title": "DEDICATED MEDIA SERVER",
+        "description": "Dedicated environment for a particular customer/application."
+      },
+      {
+        "title": "PRIVATE CLOUD MEDIA SERVER",
+        "description": "Customer's private environment supporting multiple services."
+      },
+      {
+        "title": "PRIVATE CDN",
+        "description": "Multiple distribution servers and scalable delivery infrastructure."
+      },
+      {
+        "title": "ON-PREMISE MEDIA INFRASTRUCTURE",
+        "description": "Hardware installed at the client's premises or chosen data centre."
+      }
+    ],
+    "customiseTitle": "The entire solution can be customised and white-labelled under the client's own brand.",
+    "customiseSubtitle": "Your brand. Your infrastructure. We just build the engine."
+  },
+  "startChannel": {
+    "hero": {
+      "badge": "Launch Within 24 Hours",
+      "titleLine1": "Start Your Own",
+      "titleLine2": "24×7 TV Channel",
+      "subtitle": "You bring the content. We provide the technology to broadcast it.",
+      "description": "Launch your dream channel affordably today. Scale your infrastructure without limits as your audience grows tomorrow.",
+      "steps": [
+        {
+          "title": "Content",
+          "desc": "Your Videos"
+        },
+        {
+          "title": "Playout",
+          "desc": "Scheduling"
+        },
+        {
+          "title": "Live Streaming",
+          "desc": "Distribution"
+        },
+        {
+          "title": "Viewers",
+          "desc": "Web / App / OTT / Social"
+        }
+      ]
+    },
+    "customers": {
+      "title": "Trusted by creators and broadcasters everywhere",
+      "types": [
+        "Individual",
+        "Startup",
+        "Business",
+        "Digital Marketer",
+        "News Channel",
+        "Religious Organisation",
+        "Education",
+        "Local TV",
+        "Content Creator",
+        "Community Channel"
+      ]
+    },
+    "facilities": {
+      "titleLine1": "START SMALL.",
+      "titleLine2": "UPGRADE WHEN YOU GROW.",
+      "description": "You don't need a massive budget to launch a professional broadcast channel. Start with exactly what you need today, and seamlessly scale your infrastructure as your audience expands.",
+      "startingSolution": "Starting Solution",
+      "priceText": "₹499",
+      "priceSub": "/ approx. per component",
+      "pricingNote": "Pricing scales dynamically depending on your specific configuration and requirements.",
+      "includedTitle": "Included & Available Facilities",
+      "items": [
+        "Professional Playout",
+        "Video Scheduling",
+        "24×7 Broadcasting",
+        "Graphics / Titles / Scrolling",
+        "Multi-Platform Streaming",
+        "Website Streaming",
+        "Mobile Viewing",
+        "Social Media Distribution",
+        "OTT / IPTV integration",
+        "Upgradeable Bandwidth",
+        "Upgradeable Storage"
+      ]
+    }
+  },
+  "industries": {
+    "pageTitle": "SOLUTIONS FOR YOUR INDUSTRY",
+    "pageSubtitle": "Tailored media infrastructure built for your specific sector requirements.",
+    "notFoundTitle": "Industry Not Found",
+    "viewAll": "View all industries",
+    "solutionsSuffix": "SOLUTIONS",
+    "keyAppsTitle": "Key Applications",
+    "keyAppsSubtitle": "What you can build and achieve with our infrastructure.",
+    "tellUsTitle": "TELL US YOUR REQUIREMENT",
+    "list": {
+      "education": {
+        "name": "EDUCATION",
+        "desc": "Schools, colleges, universities and training institutions.",
+        "applications": [
+          "Campus TV",
+          "Online classes",
+          "Lecture broadcasting",
+          "Recorded learning",
+          "Private IPTV",
+          "Training channels",
+          "Events",
+          "Multi-campus broadcasting"
+        ]
+      },
+      "healthcare": {
+        "name": "HEALTHCARE",
+        "desc": "Hospitals, medical colleges and healthcare networks.",
+        "applications": [
+          "Medical education",
+          "Training",
+          "Conferences",
+          "Internal broadcasting",
+          "Live procedures where appropriate",
+          "Patient information",
+          "Multi-location communication"
+        ]
+      },
+      "corporate": {
+        "name": "CORPORATE",
+        "desc": "Corporate TV, internal communication and training.",
+        "applications": [
+          "Corporate TV",
+          "Employee communication",
+          "Training",
+          "Product demonstrations",
+          "Events",
+          "Management communication",
+          "Multiple branch connectivity",
+          "Private video network"
+        ]
+      },
+      "ngo-community": {
+        "name": "NGO / RELIGIOUS / COMMUNITY",
+        "desc": "Community TV, religious events and global outreach.",
+        "applications": [
+          "Live programmes",
+          "Community TV",
+          "Events",
+          "Member communication",
+          "Mobile broadcasting",
+          "Global audience reach"
+        ]
+      },
+      "media-broadcasters": {
+        "name": "MEDIA & BROADCASTERS",
+        "desc": "TV Channels, OTT, IPTV and distribution.",
+        "applications": [
+          "TV Channel",
+          "OTT",
+          "IPTV",
+          "Radio",
+          "Playout",
+          "Contribution",
+          "Distribution",
+          "SRT",
+          "RTMP",
+          "RTSP",
+          "Re-Streaming",
+          "Private CDN",
+          "Multiple Channels"
+        ]
+      },
+      "government": {
+        "name": "GOVERNMENT / LARGE INSTITUTIONS",
+        "desc": "Private video infrastructure and controlled distribution.",
+        "applications": [
+          "Private video infrastructure",
+          "Controlled distribution",
+          "Multi-location broadcasting",
+          "Dedicated servers",
+          "Private cloud",
+          "On-premise deployment",
+          "Customised architecture"
+        ]
+      }
+    }
+  },
+  "requests": {
+    "loading": "Loading...",
+    "backToHome": "Back to Home",
+    "title": "Service Requests",
+    "subtitle": "View and track the status of your services.",
+    "loadingRequests": "Loading requests...",
+    "empty": "You have no service requests yet.",
+    "orderTitle": "Order"
+  }
+}

@@ -1,16 +1,19 @@
 import { SectionHeading } from "./SectionHeading";
 import { Mail, Phone, MapPin } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export function Contact() {
+  const { t } = useTranslation();
+
   return (
     <section id="contact-us" className="relative mx-auto max-w-[1200px] px-6 py-24">
       {/* Optional: subtle background glow for the section */}
       <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/5 via-background to-background" />
 
       <SectionHeading
-        eyebrow="Get in touch"
-        title="We're here to help"
-        subtitle="Have questions about launching your channel? Reach out to our team."
+        eyebrow={t('contact.eyebrow')}
+        title={t('contact.title')}
+        subtitle={t('contact.subtitle')}
       />
 
       <div className="mt-16 grid grid-cols-1 gap-6 sm:grid-cols-3">
@@ -23,7 +26,7 @@ export function Contact() {
             <Phone className="h-7 w-7" />
           </div>
           <div className="text-center">
-            <h3 className="font-display text-xl font-bold text-foreground">Call Us</h3>
+            <h3 className="font-display text-xl font-bold text-foreground">{t('contact.callUs')}</h3>
             <p className="mt-2 text-sm font-medium text-muted-foreground">
               +91 97899 78981
             </p>
@@ -39,7 +42,7 @@ export function Contact() {
             <Mail className="h-7 w-7" />
           </div>
           <div className="text-center">
-            <h3 className="font-display text-xl font-bold text-foreground">Email Us</h3>
+            <h3 className="font-display text-xl font-bold text-foreground">{t('contact.emailUs')}</h3>
             <p className="mt-2 text-sm font-medium text-muted-foreground">
               stanly@ivb.info
             </p>
@@ -57,7 +60,7 @@ export function Contact() {
             <MapPin className="h-7 w-7" />
           </div>
           <div className="text-center">
-            <h3 className="font-display text-xl font-bold text-foreground">Visit Us</h3>
+            <h3 className="font-display text-xl font-bold text-foreground">{t('contact.visitUs')}</h3>
             <p className="mt-2 text-sm font-medium text-muted-foreground">
               CD Tech, Egmore
             </p>

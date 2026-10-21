@@ -85,6 +85,23 @@ function doPost(e) {
         }
       }
       return json({ ok: true });
+    } else if (body.type === 'update_universal_enquiry_status') {
+      var sheet = spreadsheet.getSheetByName('AI-TV-Universal-Enquiries');
+      if (sheet) {
+        var lastRow = sheet.getLastRow();
+        if (lastRow > 1) {
+          var data = sheet.getRange(2, 1, lastRow - 1, 14).getValues();
+          for (var i = 0; i < data.length; i++) {
+            var ts = data[i][0] instanceof Date ? data[i][0].toISOString() : String(data[i][0]);
+            // Column 5 is Email (index 4)
+            if (ts === body.timestamp && String(data[i][4]).toLowerCase() === String(body.email).toLowerCase()) {
+              sheet.getRange(i + 2, 14).setValue(body.status);
+              break;
+            }
+          }
+        }
+      }
+      return json({ ok: true });
     } else if (body.type === 'checkout') {
       var sheet = spreadsheet.getSheetByName(SHEET_NAME_ORDERS);
       if (!sheet) {
@@ -127,6 +144,60 @@ function doPost(e) {
         body.accountName || ''
       ]);
       return json({ ok: true });
+    } else if (body.type === 'lead_capture') {
+      var sheet = spreadsheet.getSheetByName('AI-TV-Leads');
+      if (!sheet) {
+        sheet = spreadsheet.insertSheet('AI-TV-Leads');
+        sheet.appendRow(['Timestamp', 'Name', 'Email', 'Phone', 'Interest', 'Message']);
+        sheet.getRange(1, 1, 1, 6).setFontWeight('bold');
+      }
+      sheet.appendRow([
+        new Date(),
+        body.name || '',
+        body.email || '',
+        body.phone || '',
+        body.interest || '',
+        body.message || ''
+      ]);
+      return json({ ok: true });
+    } else if (body.type === 'update_server_components') {
+      var sheet = spreadsheet.getSheetByName('AI-TV-Server-Components');
+      if (!sheet) {
+        sheet = spreadsheet.insertSheet('AI-TV-Server-Components');
+      }
+      sheet.getDataRange().clearContent();
+      sheet.appendRow(['ID', 'Name', 'Description', 'Price', 'Category']);
+      sheet.getRange(1, 1, 1, 5).setFontWeight('bold');
+      if (body.components && body.components.length > 0) {
+        var data = body.components.map(function(c) {
+          return [c.id, c.name, c.description || '', c.price || 0, c.category || ''];
+        });
+        sheet.getRange(2, 1, data.length, 5).setValues(data);
+      }
+      return json({ ok: true });
+    } else if (body.type === 'update_requirement_options') {
+      var sheet = spreadsheet.getSheetByName('AI-TV-Requirement-Options');
+      if (!sheet) {
+        sheet = spreadsheet.insertSheet('AI-TV-Requirement-Options');
+      }
+      sheet.getDataRange().clearContent();
+      sheet.appendRow(['Category', 'ID', 'Name', 'Price', 'Value']);
+      sheet.getRange(1, 1, 1, 5).setFontWeight('bold');
+      
+      var data = [];
+      if (body.options) {
+        ['bandwidth', 'player', 'storage'].forEach(function(cat) {
+          if (body.options[cat]) {
+            body.options[cat].forEach(function(opt) {
+              data.push([cat, opt.id, opt.name, opt.price || 0, opt.value === undefined ? '' : opt.value]);
+            });
+          }
+        });
+      }
+      if (data.length > 0) {
+        sheet.getRange(2, 1, data.length, 5).setValues(data);
+      }
+      return json({ ok: true });
     } else if (body.type === 'channel_configuration') {
       var sheet = spreadsheet.getSheetByName('AI-TV-Channel-Configurations');
       if (!sheet) {
@@ -152,6 +223,38 @@ function doPost(e) {
         body.intent || '',
         body.viewers || '',
         body.hasContent || '',
+        'New'
+      ]);
+      return json({ ok: true });
+    } else if (body.type === 'universal_enquiry') {
+      var sheet = spreadsheet.getSheetByName('AI-TV-Universal-Enquiries');
+      if (!sheet) {
+        sheet = spreadsheet.insertSheet('AI-TV-Universal-Enquiries');
+      }
+      if (sheet.getLastRow() === 0) {
+        sheet.appendRow([
+          'Timestamp', 'Name', 'Company', 'WhatsApp', 'Email', 'Country', 'Goal', 'Platforms', 'Audience', 'Continuous 24x7', 'Own Brand', 'Infrastructure', 'Description', 'Status'
+        ]);
+        sheet.getRange(1, 1, 1, 14).setFontWeight('bold');
+      } else {
+        if (sheet.getMaxColumns() < 14) {
+          sheet.insertColumnsAfter(sheet.getMaxColumns(), 14 - sheet.getMaxColumns());
+        }
+      }
+      sheet.appendRow([
+        new Date(),
+        body.name || '',
+        body.company || '',
+        body.whatsapp || '',
+        body.email || '',
+        body.country || '',
+        body.goal || '',
+        body.platforms || '',
+        body.audience || '',
+        body.continuous || '',
+        body.brand || '',
+        body.infrastructure || '',
+        body.description || '',
         'New'
       ]);
       return json({ ok: true });
@@ -602,6 +705,42 @@ function doGet(e) {
       return json({ services: services });
     }
 
+    if (action === 'server_components') {
+      var sheet = spreadsheet.getSheetByName('AI-TV-Server-Components');
+      if (!sheet || sheet.getLastRow() <= 1) {
+         return json({ components: [] });
+      }
+      var rows = sheet.getRange(2, 1, sheet.getLastRow() - 1, 5).getValues();
+      var components = rows.map(function(r) {
+        return {
+          id: r[0],
+          name: r[1],
+          description: r[2],
+          price: Number(r[3]) || 0,
+          category: r[4]
+        };
+      });
+      return json({ components: components });
+    }
+
+    if (action === 'requirement_options') {
+      var sheet = spreadsheet.getSheetByName('AI-TV-Requirement-Options');
+      if (!sheet || sheet.getLastRow() <= 1) {
+         return json({ options: null });
+      }
+      var rows = sheet.getRange(2, 1, sheet.getLastRow() - 1, 5).getValues();
+      var options = { bandwidth: [], player: [], storage: [] };
+      rows.forEach(function(r) {
+        var cat = r[0];
+        if (options[cat]) {
+          var item = { id: r[1], name: r[2], price: Number(r[3]) || 0 };
+          if (r[4] !== '') item.value = Number(r[4]);
+          options[cat].push(item);
+        }
+      });
+      return json({ options: options });
+    }
+
     if (action === 'leads') {
       var sheet = spreadsheet.getSheetByName(SHEET_NAME_LEADS);
       var lastRow = sheet ? sheet.getLastRow() : 0;
@@ -621,6 +760,31 @@ function doGet(e) {
         };
       }).reverse();
       return json({ leads: leads });
+    }
+
+    if (action === 'universal_enquiries') {
+      var sheet = spreadsheet.getSheetByName('AI-TV-Universal-Enquiries');
+      var lastRow = sheet ? sheet.getLastRow() : 0;
+      var rows = lastRow > 1 ? sheet.getRange(2, 1, lastRow - 1, 14).getValues() : [];
+      var enquiries = rows.map(function(r) {
+        return {
+          timestamp: r[0] instanceof Date ? r[0].toISOString() : String(r[0]),
+          name: r[1],
+          company: r[2],
+          whatsapp: r[3],
+          email: r[4],
+          country: r[5],
+          goal: r[6],
+          platforms: r[7],
+          audience: r[8],
+          continuous: r[9],
+          brand: r[10],
+          infrastructure: r[11],
+          description: r[12],
+          status: r[13] || 'New'
+        };
+      }).reverse();
+      return json({ enquiries: enquiries });
     }
 
     if (action === 'orders') {

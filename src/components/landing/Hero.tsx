@@ -1,8 +1,11 @@
 import { motion } from "framer-motion";
 import { Link } from "@tanstack/react-router";
 import { PhoneCall, Play, Server } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export function Hero() {
+  const { t } = useTranslation();
+
   return (
     <section 
       id="hero" 
@@ -21,7 +24,7 @@ export function Hero() {
               <span className="absolute inline-flex h-full w-full rounded-full bg-live animate-live-pulse" />
               <span className="relative inline-flex h-2 w-2 rounded-full bg-live" />
             </span>
-            LIVE across Facebook, YouTube, OTT &amp; Cable — simultaneously
+            {t('hero.liveAcross')}
           </div>
 
           <h1 className="font-display text-[clamp(2.5rem,5vw,4.5rem)] font-bold leading-[1.05] tracking-tight text-white drop-shadow-lg max-w-3xl">
@@ -31,20 +34,20 @@ export function Hero() {
               transition={{ duration: 0.5, ease: "easeOut" }}
               className="block bg-gradient-to-br from-white via-white to-primary/80 bg-clip-text text-transparent uppercase"
             >
-              FROM YOUR FIRST TV CHANNEL TO YOUR OWN GLOBAL MEDIA NETWORK
+              {t('hero.headline')}
             </motion.span>
           </h1>
 
           <p className="mt-6 max-w-xl text-xl font-medium text-white drop-shadow-md">
-            Start Small. Choose What You Need. Scale Without Limits.
+            {t('hero.subheadline')}
           </p>
 
           <p className="mt-4 max-w-xl text-sm font-bold text-primary drop-shadow-md tracking-wide">
-            24×7 TV • Live Streaming • OTT • IPTV • Apps • Playout • Private Servers • Private CDN
+            {t('hero.features')}
           </p>
           
           <p className="mt-2 max-w-xl text-sm font-medium text-white/80 drop-shadow-md">
-            For Individuals • Startups • Businesses • Institutions • Broadcasters • Enterprises
+            {t('hero.audience')}
           </p>
 
           <div className="mt-10 flex flex-wrap gap-4">
@@ -53,7 +56,7 @@ export function Hero() {
               className="group inline-flex items-center gap-2 rounded-md bg-primary px-6 py-3.5 text-sm font-semibold text-primary-foreground shadow-[0_0_0_1px_color-mix(in_oklch,var(--primary)_60%,transparent),0_10px_40px_-10px_color-mix(in_oklch,var(--primary)_60%,transparent)] transition hover:brightness-110 hover:scale-[1.02]"
             >
               <Play className="h-4 w-4 fill-current" />
-              START YOUR CHANNEL
+              {t('hero.startChannelBtn')}
             </Link>
             
             <Link
@@ -61,7 +64,7 @@ export function Hero() {
               className="inline-flex items-center gap-2 rounded-md border border-white/20 bg-black/20 backdrop-blur-md px-6 py-3.5 text-sm font-semibold text-white transition hover:border-primary/50 hover:bg-black/40"
             >
               <Server className="h-4 w-4" />
-              BUILD YOUR OWN SERVER
+              {t('hero.buildServerBtn')}
             </Link>
 
             <a
@@ -69,7 +72,7 @@ export function Hero() {
               className="inline-flex items-center gap-2 rounded-md border border-white/20 bg-black/20 backdrop-blur-md px-6 py-3.5 text-sm font-semibold text-white transition hover:border-primary/50 hover:bg-black/40"
             >
               <PhoneCall className="h-4 w-4" />
-              TALK TO OUR MEDIA CONSULTANT
+              {t('hero.talkConsultantBtn')}
             </a>
           </div>
         </div>

@@ -9,7 +9,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { LogOut, Lock, ExternalLink, Save, Plus, Trash2, Phone, Mail, MapPin, Tag, CreditCard, Calendar, Package, Hash, User } from "lucide-react";
+import { LogOut, Lock, ExternalLink, Save, Plus, Trash2, Phone, Mail, MapPin, Tag, CreditCard, Calendar, Package, Hash, User, Building2, Globe2, Activity, Cpu } from "lucide-react";
 import {
   adminLogin,
   adminLogout,
@@ -25,6 +25,9 @@ import {
   OrderRecord,
   updateOrderStatus,
   updateLeadStatus,
+  getUniversalEnquiries,
+  updateUniversalEnquiryStatus,
+  UniversalEnquiry,
   getServerComponents,
   updateServerComponents,
   getRequirementOptions,
@@ -151,6 +154,7 @@ function LogoutButton({ onOut }: { onOut: () => void }) {
 const TABS = [
   { key: "stats", label: "Registration Stats" },
   { key: "consultations", label: "Free Consultations" },
+  { key: "enquiries", label: "Universal Enquiries" },
   { key: "orders", label: "Orders & Payments" },
   { key: "pricing", label: "Legacy Services" },
   { key: "server-builder", label: "Server Builder Config" },
@@ -175,6 +179,7 @@ function Dashboard() {
 
       {activeTab === 'stats' && <StatsView />}
       {activeTab === 'consultations' && <ConsultationsView />}
+      {activeTab === 'enquiries' && <EnquiriesView />}
       {activeTab === 'orders' && <OrdersView />}
       {activeTab === 'pricing' && <ServicesView />}
       {activeTab === 'server-builder' && <ServerBuilderConfigView />}
@@ -1084,10 +1089,52 @@ function ServerBuilderConfigView() {
     }
   };
 
+  const addComponent = () => {
+    const nextId = components.length > 0 ? Math.max(...components.map(c => Number(c.id.replace(/\D/g, '') || 0))) + 1 : 1;
+    setComponents([...components, { id: `c${nextId}`, name: 'New Component', description: '', price: 0, category: 'hardware' }]);
+  };
+
+  const removeComponent = (idx: number) => {
+    if (window.confirm("Remove this component?")) {
+      const newComps = [...components];
+      newComps.splice(idx, 1);
+      setComponents(newComps);
+    }
+  };
+
+  const updateComponent = (idx: number, field: string, val: any) => {
+    const newComps = [...components];
+    newComps[idx] = { ...newComps[idx], [field]: val };
+    setComponents(newComps);
+  };
+
+  const addRequirement = (cat: string) => {
+    const nextId = requirements[cat].length > 0 ? Math.max(...requirements[cat].map((r: any) => Number(r.id.replace(/\D/g, '') || 0))) + 1 : 1;
+    const newReqs = { ...requirements };
+    newReqs[cat] = [...newReqs[cat], { id: `${cat.charAt(0)}${nextId}`, name: 'New Option', price: 0, value: '' }];
+    setRequirements(newReqs);
+  };
+
+  const removeRequirement = (cat: string, idx: number) => {
+    if (window.confirm("Remove this requirement option?")) {
+      const newReqs = { ...requirements };
+      newReqs[cat] = [...newReqs[cat]];
+      newReqs[cat].splice(idx, 1);
+      setRequirements(newReqs);
+    }
+  };
+
+  const updateRequirement = (cat: string, idx: number, field: string, val: any) => {
+    const newReqs = { ...requirements };
+    newReqs[cat] = [...newReqs[cat]];
+    newReqs[cat][idx] = { ...newReqs[cat][idx], [field]: val };
+    setRequirements(newReqs);
+  };
+
   if (isCompsLoading || isReqLoading) return <div className="text-muted-foreground">Loading configuration…</div>;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="flex items-center justify-between">
         <h3 className="font-display text-lg font-semibold">Server Builder Config</h3>
         <div className="flex items-center gap-4">
@@ -1103,40 +1150,242 @@ function ServerBuilderConfigView() {
       </div>
 
       <div className="card-surface p-6">
-        <p className="text-sm text-muted-foreground mb-4">
-          This UI manages the <code>serverComponents</code> and <code>requirementOptions</code> arrays. 
-          For complex changes like adding or deleting options, please use the Google Sheet directly.
-        </p>
-        
-        <h4 className="font-semibold mt-6 mb-2">Server Components ({components?.length})</h4>
-        <div className="space-y-2 max-h-[300px] overflow-auto border border-border rounded-md p-2">
+        <div className="flex items-center justify-between mb-6">
+          <h4 className="font-semibold text-lg">Server Components ({components?.length})</h4>
+          <button onClick={addComponent} className="text-sm text-primary flex items-center gap-1 hover:underline">
+             <Plus className="h-4 w-4" /> Add Component
+          </button>
+        </div>
+        <div className="space-y-3">
           {components.map((c, i) => (
-            <div key={i} className="flex justify-between items-center text-sm p-2 bg-muted/20 rounded">
-              <div className="flex items-center gap-2">
-                 <span className="font-mono text-xs text-muted-foreground w-8">{c.id}</span>
-                 <strong>{c.name}</strong> 
-                 <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary">{c.category}</span>
-              </div>
-              <span>₹{c.price}</span>
+            <div key={i} className="flex flex-wrap gap-4 items-center bg-muted/20 border border-border p-3 rounded-lg text-sm">
+               <div className="w-16">
+                 <label className="text-[10px] text-muted-foreground uppercase block mb-1">ID</label>
+                 <input className="w-full bg-background border border-border/50 rounded px-2 py-1 outline-none focus:border-primary/50" value={c.id} onChange={(e) => updateComponent(i, 'id', e.target.value)} />
+               </div>
+               <div className="flex-1 min-w-[200px]">
+                 <label className="text-[10px] text-muted-foreground uppercase block mb-1">Name</label>
+                 <input className="w-full bg-background border border-border/50 rounded px-2 py-1 outline-none focus:border-primary/50" value={c.name} onChange={(e) => updateComponent(i, 'name', e.target.value)} />
+               </div>
+               <div className="w-32">
+                 <label className="text-[10px] text-muted-foreground uppercase block mb-1">Price (₹)</label>
+                 <input type="number" className="w-full bg-background border border-border/50 rounded px-2 py-1 outline-none focus:border-primary/50" value={c.price} onChange={(e) => updateComponent(i, 'price', Number(e.target.value))} />
+               </div>
+               <div className="w-32">
+                 <label className="text-[10px] text-muted-foreground uppercase block mb-1">Category</label>
+                 <input className="w-full bg-background border border-border/50 rounded px-2 py-1 outline-none focus:border-primary/50" value={c.category || ''} onChange={(e) => updateComponent(i, 'category', e.target.value)} />
+               </div>
+               <div className="pt-5">
+                 <button onClick={() => removeComponent(i)} className="p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive rounded"><Trash2 className="w-4 h-4" /></button>
+               </div>
             </div>
           ))}
         </div>
-
-        <h4 className="font-semibold mt-6 mb-2">Requirements</h4>
-        {requirements && Object.keys(requirements).map((key) => (
-          <div key={key} className="mb-4">
-            <h5 className="text-sm font-medium capitalize text-muted-foreground mb-1">{key}</h5>
-            <div className="space-y-1">
-              {requirements[key].map((r: any, i: number) => (
-                <div key={i} className="flex justify-between items-center text-sm p-1.5 bg-muted/10 rounded">
-                  <span>{r.name}</span>
-                  <span>₹{r.price}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        ))}
       </div>
+
+      {requirements && Object.keys(requirements).map((key) => (
+        <div key={key} className="card-surface p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h4 className="font-semibold text-lg capitalize">{key} Options</h4>
+            <button onClick={() => addRequirement(key)} className="text-sm text-primary flex items-center gap-1 hover:underline">
+               <Plus className="h-4 w-4" /> Add Option
+            </button>
+          </div>
+          <div className="space-y-3">
+            {requirements[key].map((r: any, i: number) => (
+              <div key={i} className="flex flex-wrap gap-4 items-center bg-muted/20 border border-border p-3 rounded-lg text-sm">
+                 <div className="w-16">
+                   <label className="text-[10px] text-muted-foreground uppercase block mb-1">ID</label>
+                   <input className="w-full bg-background border border-border/50 rounded px-2 py-1 outline-none focus:border-primary/50" value={r.id} onChange={(e) => updateRequirement(key, i, 'id', e.target.value)} />
+                 </div>
+                 <div className="flex-1 min-w-[200px]">
+                   <label className="text-[10px] text-muted-foreground uppercase block mb-1">Name</label>
+                   <input className="w-full bg-background border border-border/50 rounded px-2 py-1 outline-none focus:border-primary/50" value={r.name} onChange={(e) => updateRequirement(key, i, 'name', e.target.value)} />
+                 </div>
+                 <div className="w-32">
+                   <label className="text-[10px] text-muted-foreground uppercase block mb-1">Price (₹)</label>
+                   <input type="number" className="w-full bg-background border border-border/50 rounded px-2 py-1 outline-none focus:border-primary/50" value={r.price} onChange={(e) => updateRequirement(key, i, 'price', Number(e.target.value))} />
+                 </div>
+                 <div className="w-32">
+                   <label className="text-[10px] text-muted-foreground uppercase block mb-1">Value (Optional)</label>
+                   <input type="text" className="w-full bg-background border border-border/50 rounded px-2 py-1 outline-none focus:border-primary/50" value={r.value || ''} onChange={(e) => updateRequirement(key, i, 'value', e.target.value)} placeholder="e.g. 1000" />
+                 </div>
+                 <div className="pt-5">
+                   <button onClick={() => removeRequirement(key, i)} className="p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive rounded"><Trash2 className="w-4 h-4" /></button>
+                 </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
+
+function EnquiriesView() {
+  const queryClient = useQueryClient();
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["universal_enquiries"],
+    queryFn: getUniversalEnquiries,
+    refetchInterval: 30_000,
+  });
+  const [selected, setSelected] = useState<UniversalEnquiry | null>(null);
+  const [updating, setUpdating] = useState(false);
+  const [filterStatus, setFilterStatus] = useState<string>("All");
+
+  const handleStatusUpdate = async (enquiry: UniversalEnquiry, newStatus: string) => {
+    setUpdating(true);
+    await updateUniversalEnquiryStatus(enquiry.timestamp, enquiry.email, newStatus);
+    await queryClient.invalidateQueries({ queryKey: ["universal_enquiries"] });
+    setSelected(prev => prev ? { ...prev, status: newStatus } : null);
+    setUpdating(false);
+  };
+
+  if (isLoading) return <div className="text-muted-foreground">Loading universal enquiries…</div>;
+  if (error || !data) {
+    return (
+      <div className="card-surface p-6 text-sm text-destructive">
+        Couldn't load universal enquiries. Check that <code>SHEETS_ENDPOINT</code> is set and
+        the Apps Script is deployed as a Web App.
+      </div>
+    );
+  }
+  if (data.length === 0) {
+    return <div className="card-surface p-6 text-sm text-muted-foreground">No universal enquiries yet.</div>;
+  }
+
+  const filteredData = data.filter(enquiry => filterStatus === "All" || enquiry.status === filterStatus);
+
+  return (
+    <>
+      <div className="mb-6 flex flex-wrap gap-2">
+        {["All", "New", "Contacted", "Follow Up", "Converted", "Not Interested"].map(status => (
+          <button
+            key={status}
+            onClick={() => setFilterStatus(status)}
+            className={`rounded-full px-4 py-1.5 text-sm font-semibold transition ${
+              filterStatus === status 
+                ? "bg-primary text-primary-foreground"
+                : "bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            {status}
+          </button>
+        ))}
+      </div>
+
+      {filteredData.length === 0 ? (
+        <div className="card-surface p-6 text-sm text-muted-foreground">No enquiries found for this status.</div>
+      ) : (
+        <div className="flex flex-col gap-3">
+          {filteredData.map((enquiry, i) => (
+          <button
+            key={i}
+            onClick={() => setSelected(enquiry)}
+            className="card-surface card-surface-hover flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 text-left"
+          >
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-3">
+                <h4 className="font-display text-base font-semibold text-foreground truncate">{enquiry.name || "Unnamed"}</h4>
+                <div className="flex shrink-0 items-center gap-1.5">
+                  <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider ${
+                    enquiry.status === "Converted" ? "bg-green-500/10 text-green-500" :
+                    enquiry.status === "Contacted" || enquiry.status === "Follow Up" ? "bg-blue-500/10 text-blue-500" :
+                    enquiry.status === "Not Interested" ? "bg-destructive/10 text-destructive" :
+                    "bg-amber-500/10 text-amber-500"
+                  }`}>
+                    {enquiry.status}
+                  </span>
+                  {enquiry.goal && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider text-primary">
+                      <Tag className="h-3 w-3" /> {enquiry.goal}
+                    </span>
+                  )}
+                </div>
+              </div>
+              <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
+                {enquiry.whatsapp && (
+                  <p className="flex items-center gap-1.5 truncate">
+                    <Phone className="h-3.5 w-3.5 shrink-0" /> {enquiry.whatsapp}
+                  </p>
+                )}
+                {enquiry.company && (
+                  <p className="flex items-center gap-1.5 truncate">
+                    <Building2 className="h-3.5 w-3.5 shrink-0" /> {enquiry.company}
+                  </p>
+                )}
+                {enquiry.country && (
+                  <p className="flex items-center gap-1.5 truncate">
+                    <MapPin className="h-3.5 w-3.5 shrink-0" /> {enquiry.country}
+                  </p>
+                )}
+              </div>
+            </div>
+            <div className="flex flex-col sm:items-end shrink-0">
+               <span className="text-xs text-muted-foreground">{formatShortDate(enquiry.timestamp)}</span>
+            </div>
+          </button>
+        ))}
+      </div>
+      )}
+
+      <Dialog open={!!selected} onOpenChange={(open) => !open && setSelected(null)}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          {selected && (
+            <>
+              <DialogHeader>
+                <DialogTitle>{selected.name || "Unnamed"} - {selected.company || "Individual"}</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 text-sm">
+                <div className="grid grid-cols-2 gap-4">
+                  <DetailRow icon={Calendar} label="Submitted" value={formatFullDate(selected.timestamp)} />
+                  <DetailRow icon={Phone} label="WhatsApp" value={selected.whatsapp} />
+                  <DetailRow icon={Mail} label="Email" value={selected.email} />
+                  <DetailRow icon={MapPin} label="Country" value={selected.country} />
+                </div>
+                
+                <div className="rounded-xl border border-border/60 bg-muted/20 p-4 space-y-4 mt-4">
+                  <h4 className="font-semibold text-foreground border-b border-border/50 pb-2 mb-2">Requirements</h4>
+                  <DetailRow icon={Tag} label="Goal" value={selected.goal} />
+                  <DetailRow icon={Globe2} label="Platforms" value={selected.platforms} />
+                  <DetailRow icon={User} label="Audience Size" value={selected.audience} />
+                  <DetailRow icon={Activity} label="24x7 Broadcasting" value={selected.continuous} />
+                  <DetailRow icon={Tag} label="Own Brand" value={selected.brand} />
+                  <DetailRow icon={Cpu} label="Preferred Infrastructure" value={selected.infrastructure} />
+                  
+                  {selected.description && (
+                    <div className="pt-2 border-t border-border/50 mt-2">
+                      <p className="text-xs uppercase tracking-wide text-muted-foreground mb-1">Additional Details</p>
+                      <p className="text-foreground whitespace-pre-wrap">{selected.description}</p>
+                    </div>
+                  )}
+                </div>
+                
+                <div className="pt-4 border-t border-border/60">
+                  <h5 className="mb-2 text-sm font-semibold">Update Status</h5>
+                  <div className="flex flex-wrap gap-2">
+                    {["New", "Contacted", "Follow Up", "Converted", "Not Interested"].map((s) => (
+                      <button
+                        key={s}
+                        disabled={updating || selected.status === s}
+                        onClick={() => handleStatusUpdate(selected, s)}
+                        className={`rounded-md px-3 py-1.5 text-xs font-semibold transition ${
+                          selected.status === s 
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground"
+                        } disabled:opacity-50`}
+                      >
+                        {s}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
+

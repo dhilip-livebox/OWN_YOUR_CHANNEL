@@ -2,6 +2,7 @@ import { useState } from "react";
 import { z } from "zod";
 import { Check, Download, FileText, GraduationCap, Video, Wrench } from "lucide-react";
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 
 
 
@@ -22,6 +23,7 @@ const schema = z.object({
 type Errors = Partial<Record<keyof z.infer<typeof schema>, string>>;
 
 export function Registration({ onRegistered }: { onRegistered: () => void }) {
+  const { t } = useTranslation();
   const [interest, setInterest] = useState<string[]>([]);
   const [errors, setErrors] = useState<Errors>({});
   const [busy, setBusy] = useState(false);
@@ -90,12 +92,12 @@ export function Registration({ onRegistered }: { onRegistered: () => void }) {
   }
 
   const perks = [
-    { icon: Download, text: "Free broadcast & automation software" },
-    { icon: FileText, text: "Step-by-step launch guides" },
-    { icon: Video, text: "Full video library access" },
-    { icon: FileText, text: "Docs, templates & checklists" },
-    { icon: GraduationCap, text: "Training materials" },
-    { icon: Wrench, text: "More tools added weekly" },
+    { icon: Download, text: t('registration.perks.0') },
+    { icon: FileText, text: t('registration.perks.1') },
+    { icon: Video, text: t('registration.perks.2') },
+    { icon: FileText, text: t('registration.perks.3') },
+    { icon: GraduationCap, text: t('registration.perks.4') },
+    { icon: Wrench, text: t('registration.perks.5') },
   ];
 
   return (
@@ -119,13 +121,13 @@ export function Registration({ onRegistered }: { onRegistered: () => void }) {
           {/* Left value column */}
           <div>
             <span className="inline-block text-xs font-semibold uppercase tracking-[0.18em] text-primary">
-              Expert Guidance
+              {t('registration.expertGuidance')}
             </span>
             <h2 className="mt-3 font-display text-3xl font-bold leading-tight tracking-tight text-foreground sm:text-4xl">
-              Register to get free consulting.
+              {t('registration.title')}
             </h2>
             <p className="mt-3 text-muted-foreground">
-              Fill out the form below and our team will get in touch with you to provide expert guidance on launching your channel.
+              {t('registration.subtitle')}
             </p>
             <ul className="mt-6 space-y-3">
               {perks.map(({ icon: Icon, text }) => (
@@ -146,26 +148,26 @@ export function Registration({ onRegistered }: { onRegistered: () => void }) {
             ) : (
               <form onSubmit={onSubmit} className="card-surface p-6 sm:p-8">
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <Field label="Name" name="name" error={errors.name} />
-                  <Field label="Phone number" name="phone" type="tel" error={errors.phone} />
+                  <Field label={t('registration.labels.name')} name="name" error={errors.name} />
+                  <Field label={t('registration.labels.phone')} name="phone" type="tel" error={errors.phone} />
                   <Field
-                    label="Email address"
+                    label={t('registration.labels.email')}
                     name="email"
                     type="email"
                     className="sm:col-span-2"
                     error={errors.email}
                   />
-                  <Field label="Country" name="country" error={errors.country} />
-                  <Field label="State" name="state" error={errors.state} />
+                  <Field label={t('registration.labels.country')} name="country" error={errors.country} />
+                  <Field label={t('registration.labels.state')} name="state" error={errors.state} />
                   <Field
-                    label="City"
+                    label={t('registration.labels.city')}
                     name="city"
                     className="sm:col-span-2"
                     error={errors.city}
                   />
 
                   <div className="sm:col-span-2">
-                    <Label>Preferred Language</Label>
+                    <Label>{t('registration.labels.language')}</Label>
                     <select
                       name="language"
                       required
@@ -187,7 +189,7 @@ export function Registration({ onRegistered }: { onRegistered: () => void }) {
                   </div>
 
                   <div className="sm:col-span-2">
-                    <Label>What are you interested in?</Label>
+                    <Label>{t('registration.labels.interest')}</Label>
                     <div className="mt-2 flex flex-wrap gap-2">
                       {interestOptions.map((opt) => {
                         const on = interest.includes(opt);
@@ -214,7 +216,7 @@ export function Registration({ onRegistered }: { onRegistered: () => void }) {
                     {interest.includes("Others") && (
                       <input
                         name="interestOther"
-                        placeholder="Tell us more…"
+                        placeholder={t('registration.labels.other')}
                         className="mt-2 w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground outline-none transition focus:border-primary/60 focus:ring-2 focus:ring-primary/20"
                       />
                     )}
@@ -232,10 +234,10 @@ export function Registration({ onRegistered }: { onRegistered: () => void }) {
                   disabled={busy}
                   className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-md bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-[0_0_0_1px_color-mix(in_oklch,var(--primary)_60%,transparent)] transition hover:brightness-110 disabled:opacity-60"
                 >
-                  {busy ? "Registering…" : "Register to get free consulting"}
+                  {busy ? t('registration.btnRegistering') : t('registration.btnSubmit')}
                 </button>
                 <p className="mt-3 text-center text-xs text-muted-foreground">
-                  We'll never share your details. One-tap unsubscribe anytime.
+                  {t('registration.disclaimer')}
                 </p>
               </form>
             )}
@@ -278,14 +280,15 @@ function Field({
 }
 
 function SuccessCard() {
+  const { t } = useTranslation();
   return (
     <div className="card-surface p-8 text-center">
       <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-live/15 text-live ring-1 ring-live/40">
         <Check className="h-7 w-7" />
       </div>
-      <h3 className="mt-5 font-display text-2xl font-bold text-foreground">Request Received!</h3>
+      <h3 className="mt-5 font-display text-2xl font-bold text-foreground">{t('registration.successTitle')}</h3>
       <p className="mt-2 text-muted-foreground">
-        We will reach out to you soon, or our support team will contact you shortly to discuss your requirements.
+        {t('registration.successDesc')}
       </p>
     </div>
   );

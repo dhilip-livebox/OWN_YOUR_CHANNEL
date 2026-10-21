@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Download, FileText, GraduationCap, Video, Wrench, ArrowLeft } from "lucide-react";
 import { SiteHeader } from "@/components/landing/SiteHeader";
 import { SiteFooter } from "@/components/landing/SiteFooter";
+import { useTranslation } from "react-i18next";
 
 export const Route = createFileRoute("/resources")({
   head: () => ({
@@ -16,16 +17,11 @@ export const Route = createFileRoute("/resources")({
   component: ResourcesPage,
 });
 
-const items = [
-  { icon: Download, title: "Broadcast software", body: "Automation & streaming toolkit. Latest build.", cta: "Download" },
-  { icon: FileText, title: "Launch guide (PDF)", body: "Zero-to-live in a single guided workflow.", cta: "Open PDF" },
-  { icon: Video, title: "Video library", body: "Every tutorial we've ever produced.", cta: "Browse" },
-  { icon: FileText, title: "Docs & templates", body: "Schedules, rate cards, contracts, checklists.", cta: "Get pack" },
-  { icon: GraduationCap, title: "Training program", body: "Self-paced modules with quizzes.", cta: "Start" },
-  { icon: Wrench, title: "AI recipes", body: "Prompt packs for programming and graphics.", cta: "View" },
-];
+const itemsKeys = [0, 1, 2, 3, 4, 5];
+const itemIcons = [Download, FileText, Video, FileText, GraduationCap, Wrench];
 
 function ResourcesPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [ok, setOk] = useState<boolean | null>(null);
 
@@ -44,7 +40,7 @@ function ResourcesPage() {
   if (!ok) {
     return (
       <div className="grid min-h-screen place-items-center bg-background text-muted-foreground">
-        Checking access…
+        {t('resources.checking')}
       </div>
     );
   }
@@ -54,32 +50,34 @@ function ResourcesPage() {
       <SiteHeader />
       <main className="mx-auto max-w-[1600px] px-6 py-16">
         <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
-          <ArrowLeft className="h-4 w-4" /> Back to home
+          <ArrowLeft className="h-4 w-4" /> {t('resources.backToHome')}
         </Link>
         <h1 className="mt-6 font-display text-4xl font-bold tracking-tight sm:text-5xl">
-          Your free resources.
+          {t('resources.title')}
         </h1>
         <p className="mt-3 max-w-2xl text-muted-foreground">
-          Everything is unlocked. Grab the software, follow a guide, or dive
-          into training — new drops added weekly.
+          {t('resources.subtitle')}
         </p>
 
         <div className="mt-12 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {items.map(({ icon: Icon, title, body, cta }) => (
-            <div key={title} className="card-surface card-surface-hover p-6">
-              <div className="mb-4 grid h-10 w-10 place-items-center rounded-md bg-primary/10 text-primary ring-1 ring-primary/25">
-                <Icon className="h-5 w-5" />
+          {itemsKeys.map((idx) => {
+            const Icon = itemIcons[idx];
+            return (
+              <div key={idx} className="card-surface card-surface-hover p-6">
+                <div className="mb-4 grid h-10 w-10 place-items-center rounded-md bg-primary/10 text-primary ring-1 ring-primary/25">
+                  <Icon className="h-5 w-5" />
+                </div>
+                <h3 className="font-display text-lg font-semibold">{t(`resources.items.${idx}.title`)}</h3>
+                <p className="mt-1 text-sm text-muted-foreground">{t(`resources.items.${idx}.body`)}</p>
+                <button
+                  type="button"
+                  className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-primary hover:brightness-110"
+                >
+                  {t(`resources.items.${idx}.cta`)} →
+                </button>
               </div>
-              <h3 className="font-display text-lg font-semibold">{title}</h3>
-              <p className="mt-1 text-sm text-muted-foreground">{body}</p>
-              <button
-                type="button"
-                className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-primary hover:brightness-110"
-              >
-                {cta} →
-              </button>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </main>
       <SiteFooter />

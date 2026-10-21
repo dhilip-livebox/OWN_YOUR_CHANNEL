@@ -1,7 +1,9 @@
 import { motion } from "framer-motion";
 import { Play, ArrowRight, MonitorPlay, RadioTower, Globe } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export function ChannelHero() {
+  const { t } = useTranslation();
   return (
     <section className="relative overflow-hidden bg-background pt-32 pb-16 lg:pt-40 lg:pb-24">
       {/* Background elements */}
@@ -21,20 +23,20 @@ export function ChannelHero() {
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
               <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
             </span>
-            Launch Within 24 Hours
+            {t('startChannel.hero.badge')}
           </div>
 
           <h1 className="font-display text-4xl font-extrabold tracking-tight text-foreground sm:text-5xl lg:text-7xl uppercase">
-            Start Your Own <br />
-            <span className="bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">24×7 TV Channel</span>
+            {t('startChannel.hero.titleLine1')} <br />
+            <span className="bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">{t('startChannel.hero.titleLine2')}</span>
           </h1>
 
           <p className="mx-auto mt-6 max-w-2xl text-xl font-medium text-foreground sm:text-2xl">
-            You bring the content. We provide the technology to broadcast it.
+            {t('startChannel.hero.subtitle')}
           </p>
 
           <p className="mx-auto mt-4 max-w-xl text-muted-foreground">
-            Launch your dream channel affordably today. Scale your infrastructure without limits as your audience grows tomorrow.
+            {t('startChannel.hero.description')}
           </p>
         </motion.div>
 
@@ -51,8 +53,8 @@ export function ChannelHero() {
               <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500/20 to-violet-500/5 ring-1 ring-violet-500/20">
                 <Play className="h-8 w-8 text-violet-500" />
               </div>
-              <p className="mt-4 font-bold text-foreground">Content</p>
-              <p className="text-xs text-muted-foreground">Your Videos</p>
+              <p className="mt-4 font-bold text-foreground">{t('startChannel.hero.steps.0.title')}</p>
+              <p className="text-xs text-muted-foreground">{t('startChannel.hero.steps.0.desc')}</p>
             </div>
 
             <ArrowRight className="hidden h-6 w-6 text-muted-foreground md:block" />
@@ -63,8 +65,8 @@ export function ChannelHero() {
               <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-500/20 to-cyan-500/5 ring-1 ring-cyan-500/20">
                 <MonitorPlay className="h-8 w-8 text-cyan-500" />
               </div>
-              <p className="mt-4 font-bold text-foreground">Playout</p>
-              <p className="text-xs text-muted-foreground">Scheduling</p>
+              <p className="mt-4 font-bold text-foreground">{t('startChannel.hero.steps.1.title')}</p>
+              <p className="text-xs text-muted-foreground">{t('startChannel.hero.steps.1.desc')}</p>
             </div>
 
             <ArrowRight className="hidden h-6 w-6 text-muted-foreground md:block" />
@@ -75,8 +77,8 @@ export function ChannelHero() {
               <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 ring-1 ring-primary/20">
                 <RadioTower className="h-8 w-8 text-primary" />
               </div>
-              <p className="mt-4 font-bold text-foreground">Live Streaming</p>
-              <p className="text-xs text-muted-foreground">Distribution</p>
+              <p className="mt-4 font-bold text-foreground">{t('startChannel.hero.steps.2.title')}</p>
+              <p className="text-xs text-muted-foreground">{t('startChannel.hero.steps.2.desc')}</p>
             </div>
 
             <ArrowRight className="hidden h-6 w-6 text-muted-foreground md:block" />
@@ -87,8 +89,8 @@ export function ChannelHero() {
               <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500/20 to-amber-500/5 ring-1 ring-amber-500/20">
                 <Globe className="h-8 w-8 text-amber-500" />
               </div>
-              <p className="mt-4 font-bold text-foreground">Viewers</p>
-              <p className="text-xs text-muted-foreground">Web / App / OTT / Social</p>
+              <p className="mt-4 font-bold text-foreground">{t('startChannel.hero.steps.3.title')}</p>
+              <p className="text-xs text-muted-foreground">{t('startChannel.hero.steps.3.desc')}</p>
             </div>
           </div>
         </motion.div>
